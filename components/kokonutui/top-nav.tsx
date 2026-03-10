@@ -12,16 +12,16 @@ interface BreadcrumbItem {
   href?: string
 }
 
-export default function TopNav() {
-  const breadcrumbs: BreadcrumbItem[] = [
-    { label: "kokonutUI", href: "#" },
-    { label: "dashboard", href: "#" },
+export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) {
+  const defaultBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
+    { label: "InvisibleWatts", href: "/dashboard" },
+    { label: "Dashboard", href: "/dashboard" },
   ]
 
   return (
     <nav className="px-3 sm:px-6 flex items-center justify-between bg-white dark:bg-[#0F0F12] border-b border-gray-200 dark:border-[#1F1F23] h-full">
       <div className="font-medium text-sm hidden sm:flex items-center space-x-1 truncate max-w-[300px]">
-        {breadcrumbs.map((item, index) => (
+        {defaultBreadcrumbs.map((item, index) => (
           <div key={item.label} className="flex items-center">
             {index > 0 && <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400 mx-1" />}
             {item.href ? (
