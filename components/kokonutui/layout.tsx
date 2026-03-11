@@ -17,7 +17,9 @@ const Layout = memo(({ children }: LayoutProps) => {
         <header className="h-16 border-b border-gray-200 dark:border-[#1F1F23]">
           <TopNav />
         </header>
-        <main className="flex-1 overflow-auto p-6 bg-white dark:bg-[#0F0F12]">{children}</main>
+        <main className="flex-1 overflow-auto p-6 bg-white dark:bg-[#0F0F12] transition-opacity duration-300">
+          {children}
+        </main>
       </div>
     </div>
   )
