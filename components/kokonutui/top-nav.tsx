@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Bell, ChevronRight } from "lucide-react"
 import Profile01 from "./profile-01"
 import Link from "next/link"
-import { ThemeToggle } from "../theme-toggle"
+import { usePathname } from "next/navigation"
 
 interface BreadcrumbItem {
   label: string
@@ -13,9 +13,32 @@ interface BreadcrumbItem {
 }
 
 export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) {
+  const pathname = usePathname()
+  
+  const getPageLabel = (path: string): string => {
+    switch (path) {
+      case "/dashboard":
+        return "Dashboard"
+      case "/activity":
+        return "Activity"
+      case "/analytics":
+        return "Analytics"
+      case "/reports":
+        return "Reports"
+      case "/ai-insights":
+        return "AI Insights"
+      case "/settings":
+        return "Settings"
+      case "/":
+        return "Home"
+      default:
+        return "Dashboard"
+    }
+  }
+
   const defaultBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
     { label: "InvisibleWatts", href: "/dashboard" },
-    { label: "Dashboard", href: "/dashboard" },
+    { label: getPageLabel(pathname), href: pathname },
   ]
 
   return (
@@ -45,8 +68,6 @@ export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[]
         >
           <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-300" />
         </button>
-
-        <ThemeToggle />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">

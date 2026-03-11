@@ -5,7 +5,6 @@ import {
   Activity,
   TrendingUp,
   FileText,
-  Zap,
   Settings,
   HelpCircle,
   Menu,
@@ -59,19 +58,21 @@ export default function Sidebar() {
             `}
       >
         <div className="h-full flex flex-col">
-          <Link
-            href="/dashboard"
-            className="h-16 px-6 flex items-center border-b border-gray-200 dark:border-[#1F1F23]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-                <Zap className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
-                InvisibleWatts
-              </span>
-            </div>
-          </Link>
+        <Link
+          href="/dashboard"
+          className="h-16 px-6 flex items-center border-b border-gray-200 dark:border-[#1F1F23]"
+        >
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.jpg"
+              alt="InvisibleWatts Logo"
+              className="w-8 h-8 rounded-lg object-cover"
+            />
+            <span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
+              InvisibleWatts
+            </span>
+          </div>
+        </Link>
 
           <div className="flex-1 overflow-y-auto py-4 px-4">
             <div className="space-y-6">

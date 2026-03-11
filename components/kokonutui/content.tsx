@@ -1,6 +1,6 @@
 "use client"
 
-import { TrendingDown, Zap, AlertCircle, Lightbulb } from "lucide-react"
+import { TrendingDown, Zap, AlertCircle, Lightbulb, Gauge, Wind, Droplets } from "lucide-react"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 
 const consumptionData = [
@@ -96,17 +96,17 @@ export default function () {
         <InsightCard
           title="Peak Hours Alert"
           description="Your usage typically peaks between 4PM-8PM. Consider shifting loads to off-peak hours."
-          icon="⚡"
+          icon={<Zap className="w-5 h-5" />}
         />
         <InsightCard
           title="Savings Opportunity"
           description="Upgrading to an energy-efficient HVAC system could save ~15% annually."
-          icon="💡"
+          icon={<Lightbulb className="w-5 h-5" />}
         />
         <InsightCard
           title="Weather Impact"
           description="Cooler temperatures tomorrow may reduce cooling costs by 8-12%."
-          icon="🌤️"
+          icon={<Wind className="w-5 h-5" />}
         />
       </div>
     </div>
@@ -136,11 +136,11 @@ function MetricCard({
   )
 }
 
-function InsightCard({ title, description, icon }: { title: string; description: string; icon: string }) {
+function InsightCard({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) {
   return (
     <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-[#1F1F23] dark:to-[#0F0F12] rounded-xl p-4 border border-blue-200 dark:border-[#2B2B30]">
       <div className="flex items-start gap-3">
-        <div className="text-2xl">{icon}</div>
+        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex-shrink-0">{icon}</div>
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{title}</h3>
           <p className="text-xs text-gray-600 dark:text-gray-400">{description}</p>
