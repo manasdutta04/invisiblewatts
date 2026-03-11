@@ -5,18 +5,45 @@ import Image from "next/image"
 import { Bell, ChevronRight } from "lucide-react"
 import Profile01 from "./profile-01"
 import Link from "next/link"
-import { ThemeToggle } from "../theme-toggle"
+import { usePathname } from "next/navigation"
+import { memo, useMemo } from "react"
 
 interface BreadcrumbItem {
   label: string
   href?: string
 }
 
-export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) {
-  const defaultBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
-    { label: "InvisibleWatts", href: "/dashboard" },
-    { label: "Dashboard", href: "/dashboard" },
-  ]
+const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
+  const pathname = usePathname()
+  
+  const getPageLabel = (path: string): string => {
+    switch (path) {
+      case "/dashboard":
+        return "Dashboard"
+      case "/activity":
+        return "Activity"
+      case "/analytics":
+        return "Analytics"
+      case "/reports":
+        return "Reports"
+      case "/ai-insights":
+        return "AI Insights"
+      case "/settings":
+        return "Settings"
+      case "/":
+        return "Home"
+      default:
+        return "Dashboard"
+    }
+  }
+
+  const defaultBreadcrumbs = useMemo(
+    () => breadcrumbs || [
+      { label: "InvisibleWatts", href: "/dashboard" },
+      { label: getPageLabel(pathname), href: pathname },
+    ],
+    [pathname, breadcrumbs]
+  )
 
   return (
     <nav className="px-3 sm:px-6 flex items-center justify-between bg-white dark:bg-[#0F0F12] border-b border-gray-200 dark:border-[#1F1F23] h-full">
@@ -46,8 +73,6 @@ export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[]
           <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-300" />
         </button>
 
-        <ThemeToggle />
-
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
             <Image
@@ -69,5 +94,9 @@ export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[]
       </div>
     </nav>
   )
-}
+})
+
+TopNav.displayName = "TopNav"
+
+export default TopNav
 
