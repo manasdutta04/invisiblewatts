@@ -115,8 +115,8 @@ const Sidebar = memo(() => {
               <NavItem href="/settings" icon={Settings}>
                 Settings
               </NavItem>
-              <NavItem href="#" icon={HelpCircle}>
-                Help
+              <NavItem href="/help" icon={HelpCircle}>
+                Help & Support
               </NavItem>
             </div>
           </div>

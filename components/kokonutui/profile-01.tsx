@@ -45,9 +45,9 @@ export default function Profile01({
     },
     {
       label: "Terms & Policies",
-      href: "#",
+      href: "/terms",
       icon: <FileText className="w-4 h-4" />,
-      external: true,
+      external: false,
     },
   ]
 
@@ -79,6 +79,7 @@ export default function Profile01({
               <Link
                 key={item.label}
                 href={item.href}
+                onClick={() => item.href !== "#" ? undefined : null}
                 className="flex items-center justify-between p-2 
                                     hover:bg-zinc-50 dark:hover:bg-zinc-800/50 
                                     rounded-lg transition-colors duration-200"
