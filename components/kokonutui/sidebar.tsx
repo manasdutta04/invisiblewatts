@@ -10,6 +10,7 @@ import {
   HelpCircle,
   Menu,
   FlaskConical,
+  Upload,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, memo, useCallback, useEffect, useTransition } from "react"
@@ -103,6 +104,9 @@ const Sidebar = memo(() => {
                 <div className="space-y-1">
                   <NavItem href="/dashboard" icon={Home}>
                     Dashboard
+                  </NavItem>
+                  <NavItem href="/upload" icon={Upload}>
+                    Upload Data
                   </NavItem>
                   <NavItem href="/activity" icon={Activity}>
                     Activity

@@ -1,8 +1,8 @@
 "use client"
 
-import { Bell, Lock, User, Zap, Home } from "lucide-react"
+import { Bell, Lock, User, Zap } from "lucide-react"
 import { updateProfile, updateGoals, updateNotifications } from "@/app/settings/actions"
-import type { Profile, UserPreferences, Device } from "@/lib/supabase/types"
+import type { Profile, UserPreferences } from "@/lib/supabase/types"
 
 interface NotificationPrefs {
   peak_usage?: boolean
@@ -15,25 +15,11 @@ interface NotificationPrefs {
 export default function SettingsContent({
   profile,
   prefs,
-  devices,
 }: {
   profile: Profile | null
   prefs: UserPreferences | null
-  devices: Device[]
 }) {
   const notifs = (prefs?.notifications ?? {}) as NotificationPrefs
-
-  function formatLastSync(lastSyncAt: string | null): string {
-    if (!lastSyncAt) return "Never"
-    const diff = Date.now() - new Date(lastSyncAt).getTime()
-    const minutes = Math.floor(diff / 60000)
-    if (minutes < 2) return "Just now"
-    if (minutes < 60) return `${minutes} minutes ago`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
-    const days = Math.floor(hours / 24)
-    return `${days} day${days > 1 ? "s" : ""} ago`
-  }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -98,34 +84,6 @@ export default function SettingsContent({
             Save Goals
           </button>
         </form>
-      </SettingSection>
-
-      {/* Connected Devices */}
-      <SettingSection icon={<Home className="w-5 h-5" />} title="Connected Devices" description="Manage smart meters and connected devices">
-        <div className="space-y-3">
-          {devices.map((device) => (
-            <div
-              key={device.id}
-              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1F1F23] rounded-lg"
-            >
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{device.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Last sync: {formatLastSync(device.last_sync_at)}
-                </p>
-              </div>
-              <span
-                className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                  device.status === "online"
-                    ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
-                    : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
-                }`}
-              >
-                {device.status === "online" ? "Connected" : "Offline"}
-              </span>
-            </div>
-          ))}
-        </div>
       </SettingSection>
 
       {/* Notifications */}

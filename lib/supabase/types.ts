@@ -189,3 +189,35 @@ export type DailyReading = Database["public"]["Tables"]["daily_readings"]["Row"]
 export type MonthlyReading = Database["public"]["Tables"]["monthly_readings"]["Row"]
 export type CategoryBreakdown = Database["public"]["Tables"]["category_breakdown"]["Row"]
 export type ActivityEvent = Database["public"]["Tables"]["activity_events"]["Row"]
+
+// ─── Digital usage tracking (new) ────────────────────────────────────────────
+
+export interface UsageEntry {
+  id: string
+  user_id: string
+  date: string            // DATE as ISO string
+  device_type: "phone" | "laptop" | "tablet"
+  daily_hours: number
+  activity_type: "streaming" | "browsing" | "gaming" | "calls" | "mixed"
+  notes: string | null
+  created_at: string
+}
+
+export interface AiAnalysis {
+  id: string
+  user_id: string
+  created_at: string
+  summary: string
+  co2_estimate_grams: number | null
+  recommendations: string[]
+  entry_count: number
+}
+
+// Lightweight form type used before saving to DB
+export interface UsageEntryInput {
+  date: string
+  device_type: "phone" | "laptop" | "tablet"
+  daily_hours: number
+  activity_type: "streaming" | "browsing" | "gaming" | "calls" | "mixed"
+  notes?: string
+}

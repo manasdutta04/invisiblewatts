@@ -27,7 +27,7 @@ export default function ActivityContent({
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
           <FlaskConical className="w-4 h-4 flex-shrink-0" />
           <span>
-            You&apos;re viewing <strong>demo data</strong>. Connect a smart meter in Settings to see your real activity.
+            You&apos;re viewing <strong>demo data</strong>. Upload your device usage data in the <strong>Upload</strong> page to see your real activity.
           </span>
         </div>
       )}

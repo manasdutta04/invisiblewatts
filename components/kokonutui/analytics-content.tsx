@@ -95,7 +95,7 @@ export default function AnalyticsContent({
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
           <FlaskConical className="w-4 h-4 flex-shrink-0" />
           <span>
-            You&apos;re viewing <strong>demo data</strong>. Connect a smart meter in Settings to see your real analytics.
+            You&apos;re viewing <strong>demo data</strong>. Upload your own device usage data to see your real analytics.
           </span>
         </div>
       )}
@@ -109,7 +109,7 @@ export default function AnalyticsContent({
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No analytics yet</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-              Connect a device in <strong>Settings</strong> to start collecting energy data, or use <strong>Demo Mode</strong> in the sidebar to explore with sample data.
+              Upload your usage data on the <strong>Upload</strong> page to see your analytics, or use <strong>Demo Mode</strong> in the sidebar to explore with sample data.
             </p>
           </div>
         </div>
