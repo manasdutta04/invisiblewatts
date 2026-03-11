@@ -6,13 +6,14 @@ import { Bell, ChevronRight } from "lucide-react"
 import Profile01 from "./profile-01"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { memo, useMemo } from "react"
 
 interface BreadcrumbItem {
   label: string
   href?: string
 }
 
-export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) {
+const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
   const pathname = usePathname()
   
   const getPageLabel = (path: string): string => {
@@ -36,10 +37,13 @@ export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[]
     }
   }
 
-  const defaultBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
-    { label: "InvisibleWatts", href: "/dashboard" },
-    { label: getPageLabel(pathname), href: pathname },
-  ]
+  const defaultBreadcrumbs = useMemo(
+    () => breadcrumbs || [
+      { label: "InvisibleWatts", href: "/dashboard" },
+      { label: getPageLabel(pathname), href: pathname },
+    ],
+    [pathname, breadcrumbs]
+  )
 
   return (
     <nav className="px-3 sm:px-6 flex items-center justify-between bg-white dark:bg-[#0F0F12] border-b border-gray-200 dark:border-[#1F1F23] h-full">
@@ -90,5 +94,9 @@ export default function TopNav({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[]
       </div>
     </nav>
   )
-}
+})
+
+TopNav.displayName = "TopNav"
+
+export default TopNav
 

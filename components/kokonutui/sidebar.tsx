@@ -11,15 +11,15 @@ import {
   Menu,
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, memo, useCallback } from "react"
 import Image from "next/image"
 
-export default function Sidebar() {
+const Sidebar = memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  function handleNavigation() {
+  const handleNavigation = useCallback(() => {
     setIsMobileMenuOpen(false)
-  }
+  }, [])
 
   function NavItem({
     href,
@@ -131,5 +131,9 @@ export default function Sidebar() {
       )}
     </>
   )
-}
+})
+
+Sidebar.displayName = "Sidebar"
+
+export default Sidebar
 
