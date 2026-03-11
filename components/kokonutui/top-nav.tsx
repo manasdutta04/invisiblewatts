@@ -6,7 +6,8 @@ import { Bell, ChevronRight } from "lucide-react"
 import Profile01 from "./profile-01"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { memo, useMemo } from "react"
+import { memo, useMemo, useState } from "react"
+import NotificationsModal from "@/components/notifications-modal"
 
 interface BreadcrumbItem {
   label: string
@@ -15,6 +16,7 @@ interface BreadcrumbItem {
 
 const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
   const pathname = usePathname()
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   
   const getPageLabel = (path: string): string => {
     switch (path) {
@@ -30,6 +32,10 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
         return "AI Insights"
       case "/settings":
         return "Settings"
+      case "/help":
+        return "Help & Support"
+      case "/terms":
+        return "Terms of Service"
       case "/":
         return "Home"
       default:
@@ -68,10 +74,12 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
       <div className="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-0">
         <button
           type="button"
+          onClick={() => setNotificationsOpen(true)}
           className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-[#1F1F23] rounded-full transition-colors"
         >
           <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-300" />
         </button>
+        <NotificationsModal open={notificationsOpen} onOpenChange={setNotificationsOpen} />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
