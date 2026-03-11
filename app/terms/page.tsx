@@ -1,6 +1,11 @@
+"use client"
+
+import Layout from "@/components/kokonutui/layout"
+
 export default function TermsPage() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <Layout>
+      <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Terms of Service</h1>
         <p className="text-gray-600 dark:text-gray-400">Last updated: March 2025</p>
@@ -133,6 +138,7 @@ export default function TermsPage() {
           </p>
         </section>
       </div>
-    </div>
+      </div>
+    </Layout>
   )
 }
