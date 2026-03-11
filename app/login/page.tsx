@@ -12,9 +12,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/logo.jpg"
+            src="/logo.svg"
             alt="InvisibleWatts"
-            className="w-14 h-14 rounded-xl mx-auto mb-4 object-cover"
+            className="w-14 h-14 rounded-xl mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Sign in to InvisibleWatts

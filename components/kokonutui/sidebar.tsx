@@ -85,9 +85,9 @@ const Sidebar = memo(() => {
         >
           <div className="flex items-center gap-3">
             <img
-              src="/logo.jpg"
+              src="/logo.svg"
               alt="InvisibleWatts Logo"
-              className="w-8 h-8 rounded-lg object-cover"
+              className="w-8 h-8 rounded-lg"
             />
             <span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
               InvisibleWatts
