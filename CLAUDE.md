@@ -52,7 +52,7 @@ The data flow:
 | Package manager | pnpm | — |
 | Dev server | Next.js + Turbopack | — |
 | Database + Auth | Supabase | latest |
-| AI | Groq API (llama-3.2-11b-vision + llama-3.3-70b-versatile) | free tier |
+| AI | Groq API (meta-llama/llama-4-scout-17b-16e-instruct + llama-3.3-70b-versatile) | free tier |
 
 ---
 
@@ -364,7 +364,7 @@ POST endpoint with two modes:
 
 | Mode | Model | Input | Output |
 |---|---|---|---|
-| `image` | `llama-3.2-11b-vision-preview` | `{ imageBase64, mimeType }` | `{ entries: UsageEntryInput[] }` |
+| `image` | `meta-llama/llama-4-scout-17b-16e-instruct` | `{ imageBase64, mimeType }` | `{ entries: UsageEntryInput[] }` |
 | `analyze` | `llama-3.3-70b-versatile` | `{ entries: UsageEntryInput[] }` | Saves `ai_analysis` row, returns it |
 
 CO₂ emission factors used in prompts:
