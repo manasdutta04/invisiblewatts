@@ -294,22 +294,85 @@ cn("base-class", condition && "conditional-class", "another-class")
 
 ---
 
+## Authentication & Database (Implemented)
+
+### Auth
+- **Provider**: Supabase email/password only (no OAuth)
+- **Package**: `@supabase/ssr` + `@supabase/supabase-js`
+- **Session strategy**: Supabase SSR cookies, refreshed by `middleware.ts` on every request
+- **Route protection**: `middleware.ts` at project root — unauthenticated → `/login`, authenticated on `/login|/signup` → `/dashboard`
+- **Public routes**: `/login`, `/signup`, `/terms`, `/help`
+- **Auth pages**: `app/login/page.tsx` and `app/signup/page.tsx` (standalone, no Layout)
+- **Server actions**: `app/auth/actions.ts` — `signIn`, `signUp`, `signOut` (React 19 `useActionState` contract)
+- **Disable email confirmation** in Supabase Dashboard → Auth → Providers → Email (required for hackathon flow)
+
+### Supabase Client Utilities
+| File | Used in | Notes |
+|---|---|---|
+| `lib/supabase/client.ts` | `"use client"` components | `createBrowserClient` |
+| `lib/supabase/server.ts` | Server components, server actions | `createServerClient` + `await cookies()` (Next.js 15 async cookies) |
+| `lib/supabase/types.ts` | All files | TypeScript types for all 8 tables |
+
+### Database Schema (8 tables)
+| Table | Purpose | Key columns |
+|---|---|---|
+| `profiles` | User identity | `id` (= auth.users.id), `email`, `full_name` |
+| `user_preferences` | Goals + notification flags | `daily_kwh_target`, `monthly_budget_dollars`, `notifications` (JSONB) |
+| `devices` | Connected smart devices | `name`, `device_type`, `status` (online/offline), `last_sync_at` |
+| `hourly_readings` | kW per hour today | `hour_label`, `kw_usage`, `kw_target` → Dashboard line chart |
+| `daily_readings` | kWh per day | `date`, `kwh_total` → Dashboard bar chart |
+| `monthly_readings` | kWh per month | `month_label`, `sort_order`, `kwh_total` → Analytics area chart |
+| `category_breakdown` | kWh by device category | `category`, `kwh_total`, `percentage`, `trend_direction` → Analytics pie + table |
+| `activity_events` | System event log | `event_name`, `event_type`, `device_name`, `occurred_at` → Activity page |
+
+**RLS**: Every table has a single `FOR ALL` policy: `auth.uid() = user_id` (or `= id` for profiles).
+
+**Seed trigger**: `public.handle_new_user()` (SECURITY DEFINER) fires on `auth.users INSERT`. Seeds all 8 tables with realistic data for every new signup. SQL: `supabase/schema.sql`.
+
+### Data Fetching Architecture
+Pages that serve real data are now **async server components** that query Supabase directly, then pass data as props to client child components (for Recharts / interactive UI):
+
+| Route | Server component | Client component |
+|---|---|---|
+| `/dashboard` | `components/kokonutui/dashboard.tsx` | `components/kokonutui/content.tsx` |
+| `/analytics` | `app/analytics/page.tsx` | `components/kokonutui/analytics-content.tsx` |
+| `/activity` | `app/activity/page.tsx` | `components/kokonutui/activity-content.tsx` |
+| `/settings` | `app/settings/page.tsx` | `components/kokonutui/settings-content.tsx` |
+
+Settings mutations use server actions in `app/settings/actions.ts`: `updateProfile`, `updateGoals`, `updateNotifications` (all call `revalidatePath("/settings")`).
+
+### TopNav + Profile
+- `top-nav.tsx`: uses `createClient()` (browser client) in `useEffect` to fetch user + profile name; shows initials avatar
+- `profile-01.tsx`: accepts `name: string, email: string` props; sign out via `<form action={signOut}>`
+
+### Environment Variables
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+```
+Both are safe to expose client-side (restricted by RLS). Never add `SERVICE_ROLE_KEY` to frontend.
+
+---
+
 ## What Is NOT Yet Built (Roadmap)
 
 These are known gaps between the current UI prototype and the full product vision:
 
 ### Backend & Data
-- [ ] No database (no Prisma, no Drizzle, no Supabase setup)
-- [ ] No API routes — all data is hardcoded static arrays
+- [x] Supabase database with 8 tables — DONE
+- [x] RLS policies on all tables — DONE
+- [x] Seed trigger on signup — DONE
+- [x] Dashboard, Analytics, Activity, Settings connected to real DB — DONE
 - [ ] No real smart meter / IoT data ingestion
 - [ ] No browser/OS energy tracking APIs integrated
 - [ ] No CO₂ conversion logic (energy kWh → emissions factor → gCO₂eq)
 - [ ] No regional grid emission factor lookup
 
 ### Auth & Users
-- [ ] No authentication (no NextAuth, no Clerk, no Auth.js)
-- [ ] Profile shows placeholder "Eugene An / Prompt Engineer"
-- [ ] No multi-user support
+- [x] Email/password auth via Supabase — DONE
+- [x] Profile shows real user name from `profiles` table — DONE
+- [x] Sign out wired up — DONE
+- [ ] No multi-user support (each user sees only their own data via RLS)
 
 ### AI Features
 - [ ] AI insights are static placeholder text, not real ML model output
