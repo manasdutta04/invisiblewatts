@@ -1,20 +1,15 @@
 "use client"
 
-import { AlertCircle, CheckCircle, AlertTriangle, Info } from "lucide-react"
+import { AlertCircle, CheckCircle, AlertTriangle, Info, FlaskConical } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import type { ActivityEvent } from "@/lib/supabase/types"
 
-const CATEGORY_COLORS: Record<string, string> = {
-  HVAC: "#0ea5e9",
-  "Water Heating": "#f97316",
-  Lighting: "#fbbf24",
-  Appliances: "#06b6d4",
-}
-
 export default function ActivityContent({
   events,
+  isDemoMode,
 }: {
   events: ActivityEvent[]
+  isDemoMode?: boolean
 }) {
   return (
     <div className="space-y-6">
@@ -27,10 +22,20 @@ export default function ActivityContent({
         </p>
       </div>
 
+      {/* Demo mode banner */}
+      {isDemoMode && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
+          <FlaskConical className="w-4 h-4 flex-shrink-0" />
+          <span>
+            You&apos;re viewing <strong>demo data</strong>. Connect a smart meter in Settings to see your real activity.
+          </span>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23]">
         {events.length === 0 ? (
           <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            No activity events yet.
+            No activity events yet. Events will appear here once your devices are connected.
           </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-[#1F1F23]">

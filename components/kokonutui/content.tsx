@@ -1,6 +1,6 @@
 "use client"
 
-import { TrendingDown, Zap, AlertCircle, Lightbulb, Wind } from "lucide-react"
+import { TrendingDown, Zap, AlertCircle, Lightbulb, Wind, FlaskConical, PlugZap } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -31,6 +31,7 @@ interface ContentProps {
   currentKw: number
   todayKwh: number
   monthlyAvgKwh: number
+  isDemoMode?: boolean
 }
 
 export default function Content({
@@ -39,7 +40,10 @@ export default function Content({
   currentKw,
   todayKwh,
   monthlyAvgKwh,
+  isDemoMode,
 }: ContentProps) {
+  const isEmpty = hourlyData.length === 0 && weeklyData.length === 0
+
   const chartHourly = hourlyData.map((r) => ({
     hour: r.hour_label,
     usage: r.kw_usage,
@@ -53,106 +57,133 @@ export default function Content({
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          icon={<Zap className="w-5 h-5" />}
-          label="Current Usage"
-          value={`${currentKw.toFixed(1)} kW`}
-          change="Live reading"
-          color="from-blue-500 to-cyan-500"
-        />
-        <MetricCard
-          icon={<TrendingDown className="w-5 h-5" />}
-          label="Today's Total"
-          value={`${todayKwh.toFixed(1)} kWh`}
-          change="Cumulative today"
-          color="from-green-500 to-emerald-500"
-        />
-        <MetricCard
-          icon={<Lightbulb className="w-5 h-5" />}
-          label="Monthly Average"
-          value={`${monthlyAvgKwh.toLocaleString()} kWh`}
-          change="8-month average"
-          color="from-amber-500 to-orange-500"
-        />
-        <MetricCard
-          icon={<AlertCircle className="w-5 h-5" />}
-          label="Peak Hours"
-          value="16:00 - 20:00"
-          change="Next peak tonight"
-          color="from-red-500 to-pink-500"
-        />
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Today's Consumption
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartHourly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="hour" stroke="#9ca3af" tick={{ fontSize: 11 }} />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="usage"
-                stroke="#0ea5e9"
-                strokeWidth={2}
-                dot={false}
-                name="Usage (kW)"
-              />
-              <Line
-                type="monotone"
-                dataKey="target"
-                stroke="#f97316"
-                strokeWidth={2}
-                dot={false}
-                name="Target (kW)"
-                strokeDasharray="5 5"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Demo mode banner */}
+      {isDemoMode && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
+          <FlaskConical className="w-4 h-4 flex-shrink-0" />
+          <span>
+            You&apos;re viewing <strong>demo data</strong>. Connect a smart meter in Settings to see your real usage.
+          </span>
         </div>
+      )}
 
-        <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Weekly Usage
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartWeekly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="day" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip />
-              <Bar dataKey="kWh" fill="#06b6d4" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Empty state */}
+      {!isDemoMode && isEmpty ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+          <div className="p-4 rounded-full bg-gray-100 dark:bg-[#1F1F23]">
+            <PlugZap className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No data yet</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+              Connect a device in <strong>Settings</strong> to start recording your energy usage, or use <strong>Demo Mode</strong> in the sidebar to explore with sample data.
+            </p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              icon={<Zap className="w-5 h-5" />}
+              label="Current Usage"
+              value={`${currentKw.toFixed(1)} kW`}
+              change="Live reading"
+              color="from-blue-500 to-cyan-500"
+            />
+            <MetricCard
+              icon={<TrendingDown className="w-5 h-5" />}
+              label="Today's Total"
+              value={`${todayKwh.toFixed(1)} kWh`}
+              change="Cumulative today"
+              color="from-green-500 to-emerald-500"
+            />
+            <MetricCard
+              icon={<Lightbulb className="w-5 h-5" />}
+              label="Monthly Average"
+              value={`${monthlyAvgKwh.toLocaleString()} kWh`}
+              change="8-month average"
+              color="from-amber-500 to-orange-500"
+            />
+            <MetricCard
+              icon={<AlertCircle className="w-5 h-5" />}
+              label="Peak Hours"
+              value="16:00 - 20:00"
+              change="Next peak tonight"
+              color="from-red-500 to-pink-500"
+            />
+          </div>
 
-      {/* Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <InsightCard
-          title="Peak Hours Alert"
-          description="Your usage typically peaks between 4PM–8PM. Consider shifting loads to off-peak hours."
-          icon={<Zap className="w-5 h-5" />}
-        />
-        <InsightCard
-          title="Savings Opportunity"
-          description="Upgrading to an energy-efficient HVAC system could save ~15% annually."
-          icon={<Lightbulb className="w-5 h-5" />}
-        />
-        <InsightCard
-          title="Weather Impact"
-          description="Cooler temperatures tomorrow may reduce cooling costs by 8–12%."
-          icon={<Wind className="w-5 h-5" />}
-        />
-      </div>
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Today's Consumption
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartHourly}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="hour" stroke="#9ca3af" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="usage"
+                    stroke="#0ea5e9"
+                    strokeWidth={2}
+                    dot={false}
+                    name="Usage (kW)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="target"
+                    stroke="#f97316"
+                    strokeWidth={2}
+                    dot={false}
+                    name="Target (kW)"
+                    strokeDasharray="5 5"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Weekly Usage
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartWeekly}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="day" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip />
+                  <Bar dataKey="kWh" fill="#06b6d4" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Insights */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <InsightCard
+              title="Peak Hours Alert"
+              description="Your usage typically peaks between 4PM–8PM. Consider shifting loads to off-peak hours."
+              icon={<Zap className="w-5 h-5" />}
+            />
+            <InsightCard
+              title="Savings Opportunity"
+              description="Upgrading to an energy-efficient HVAC system could save ~15% annually."
+              icon={<Lightbulb className="w-5 h-5" />}
+            />
+            <InsightCard
+              title="Weather Impact"
+              description="Cooler temperatures tomorrow may reduce cooling costs by 8–12%."
+              icon={<Wind className="w-5 h-5" />}
+            />
+          </div>
+        </>
+      )}
     </div>
   )
 }

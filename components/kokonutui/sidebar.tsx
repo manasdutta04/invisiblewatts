@@ -9,17 +9,31 @@ import {
   Settings,
   HelpCircle,
   Menu,
+  FlaskConical,
 } from "lucide-react"
 import Link from "next/link"
-import { useState, memo, useCallback } from "react"
-import Image from "next/image"
+import { useState, memo, useCallback, useEffect, useTransition } from "react"
+import { toggleDemoMode } from "@/app/demo/actions"
 
 const Sidebar = memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDemoMode, setIsDemoMode] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    setIsDemoMode(document.cookie.includes("iw_demo_mode=1"))
+  }, [])
 
   const handleNavigation = useCallback(() => {
     setIsMobileMenuOpen(false)
   }, [])
+
+  function handleDemoToggle() {
+    startTransition(async () => {
+      await toggleDemoMode()
+      setIsDemoMode((prev) => !prev)
+    })
+  }
 
   function NavItem({
     href,
@@ -112,6 +126,31 @@ const Sidebar = memo(() => {
                   </NavItem>
                 </div>
               </div>
+
+              {/* Demo Mode toggle */}
+              <div>
+                <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Demo
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDemoToggle}
+                  disabled={isPending}
+                  className={`w-full flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+                    isDemoMode
+                      ? "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50"
+                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-[#1F1F23]"
+                  } disabled:opacity-60`}
+                >
+                  <FlaskConical className="h-4 w-4 mr-3 flex-shrink-0" />
+                  {isPending ? "Switching…" : isDemoMode ? "Demo Mode: On" : "Try Demo"}
+                  {isDemoMode && (
+                    <span className="ml-auto text-xs bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-300 px-1.5 py-0.5 rounded-full">
+                      ON
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -141,4 +180,3 @@ const Sidebar = memo(() => {
 Sidebar.displayName = "Sidebar"
 
 export default Sidebar
-

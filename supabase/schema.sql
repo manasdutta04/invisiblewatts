@@ -134,8 +134,12 @@ CREATE POLICY "Users can access own activity events"
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================
--- SEED TRIGGER
--- Fires on every new auth.users row. Seeds realistic data.
+-- SIGNUP TRIGGER
+-- Fires on every new auth.users row.
+-- Seeds only structural data (profile, preferences, devices).
+-- Chart data (hourly/daily/monthly/category/activity) is NOT
+-- seeded — users see empty states until real devices are connected.
+-- Use the Demo Mode toggle in the sidebar to explore with sample data.
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -147,7 +151,6 @@ AS $$
 DECLARE
   uid   UUID := NEW.id;
   umail TEXT := NEW.email;
-  today DATE := CURRENT_DATE;
 BEGIN
   -- Profile
   INSERT INTO public.profiles (id, email, full_name)
@@ -156,80 +159,12 @@ BEGIN
   -- Preferences (column defaults apply)
   INSERT INTO public.user_preferences (user_id) VALUES (uid);
 
-  -- Devices
+  -- Default devices (placeholders until user connects real hardware)
   INSERT INTO public.devices (user_id, name, device_type, status, last_sync_at) VALUES
-    (uid, 'Main Smart Meter',      'smart_meter', 'online',  NOW() - INTERVAL '2 minutes'),
-    (uid, 'HVAC Smart Thermostat', 'thermostat',  'online',  NOW() - INTERVAL '5 minutes'),
-    (uid, 'Smart Plug #1',         'smart_plug',  'online',  NOW() - INTERVAL '1 hour'),
-    (uid, 'Smart Plug #3',         'smart_plug',  'offline', NOW() - INTERVAL '2 days');
-
-  -- Hourly readings for today (24-hour load curve, peak at 16:00-20:00)
-  INSERT INTO public.hourly_readings (user_id, recorded_at, hour_label, kw_usage, kw_target) VALUES
-    (uid, today + INTERVAL '0 hours',  '00:00', 1.8, 2.5),
-    (uid, today + INTERVAL '1 hour',   '01:00', 1.5, 2.5),
-    (uid, today + INTERVAL '2 hours',  '02:00', 1.3, 2.5),
-    (uid, today + INTERVAL '3 hours',  '03:00', 1.2, 2.5),
-    (uid, today + INTERVAL '4 hours',  '04:00', 1.3, 2.5),
-    (uid, today + INTERVAL '5 hours',  '05:00', 1.6, 2.5),
-    (uid, today + INTERVAL '6 hours',  '06:00', 2.1, 2.5),
-    (uid, today + INTERVAL '7 hours',  '07:00', 2.8, 2.5),
-    (uid, today + INTERVAL '8 hours',  '08:00', 3.1, 2.5),
-    (uid, today + INTERVAL '9 hours',  '09:00', 2.9, 2.5),
-    (uid, today + INTERVAL '10 hours', '10:00', 2.7, 2.5),
-    (uid, today + INTERVAL '11 hours', '11:00', 2.5, 2.5),
-    (uid, today + INTERVAL '12 hours', '12:00', 3.8, 2.5),
-    (uid, today + INTERVAL '13 hours', '13:00', 3.5, 2.5),
-    (uid, today + INTERVAL '14 hours', '14:00', 3.2, 2.5),
-    (uid, today + INTERVAL '15 hours', '15:00', 3.4, 2.5),
-    (uid, today + INTERVAL '16 hours', '16:00', 4.4, 2.5),
-    (uid, today + INTERVAL '17 hours', '17:00', 4.8, 2.5),
-    (uid, today + INTERVAL '18 hours', '18:00', 4.2, 2.5),
-    (uid, today + INTERVAL '19 hours', '19:00', 3.9, 2.5),
-    (uid, today + INTERVAL '20 hours', '20:00', 3.5, 2.5),
-    (uid, today + INTERVAL '21 hours', '21:00', 2.8, 2.5),
-    (uid, today + INTERVAL '22 hours', '22:00', 2.2, 2.5),
-    (uid, today + INTERVAL '23 hours', '23:00', 1.9, 2.5);
-
-  -- Daily readings (last 7 days)
-  INSERT INTO public.daily_readings (user_id, date, kwh_total, cost_dollars) VALUES
-    (uid, today - 6, 245, 30.6),
-    (uid, today - 5, 268, 33.5),
-    (uid, today - 4, 278, 34.8),
-    (uid, today - 3, 255, 31.9),
-    (uid, today - 2, 290, 36.3),
-    (uid, today - 1, 310, 38.8),
-    (uid, today,     285, 35.6);
-
-  -- Monthly readings (8 months)
-  INSERT INTO public.monthly_readings (user_id, month_label, sort_order, kwh_total, cost_dollars) VALUES
-    (uid, 'Jan', 1, 1200, 150),
-    (uid, 'Feb', 2, 1100, 137),
-    (uid, 'Mar', 3,  950, 119),
-    (uid, 'Apr', 4,  890, 111),
-    (uid, 'May', 5, 1050, 131),
-    (uid, 'Jun', 6, 1280, 160),
-    (uid, 'Jul', 7, 1350, 169),
-    (uid, 'Aug', 8, 1320, 165);
-
-  -- Category breakdown
-  INSERT INTO public.category_breakdown
-    (user_id, category, kwh_total, percentage, cost_dollars, trend_direction, trend_percent) VALUES
-    (uid, 'HVAC',          560, 45, 70,  'up',   5),
-    (uid, 'Water Heating', 250, 20, 31,  'down',  2),
-    (uid, 'Lighting',      190, 15, 24,  'flat',  0),
-    (uid, 'Appliances',    250, 20, 31,  'up',    3);
-
-  -- Activity events
-  INSERT INTO public.activity_events
-    (user_id, occurred_at, event_name, description, event_type, device_name) VALUES
-    (uid, NOW() - INTERVAL '90 minutes',                  'Peak Usage Detected', 'Usage exceeded 3 kW for 15 minutes',       'alert',   'HVAC System'),
-    (uid, NOW() - INTERVAL '3 hours',                     'Device Connected',    'Smart meter successfully synchronized',     'success', 'Smart Meter'),
-    (uid, NOW() - INTERVAL '7 hours',                     'Energy Goal Met',     'Daily usage 8% below target',              'success', 'System'),
-    (uid, NOW() - INTERVAL '1 day' - INTERVAL '1 hour',   'Unusual Pattern',     'Usage pattern differs from usual by 12%',  'warning', 'Water Heater'),
-    (uid, NOW() - INTERVAL '1 day' - INTERVAL '5 hours',  'Device Offline',      'Connection lost with smart plug',          'alert',   'Smart Plug #3'),
-    (uid, NOW() - INTERVAL '1 day' - INTERVAL '7 hours',  'Maintenance Alert',   'Scheduled maintenance completed',          'info',    'System'),
-    (uid, NOW() - INTERVAL '3 days',                      'Settings Updated',    'Energy targets adjusted',                  'info',    'System'),
-    (uid, NOW() - INTERVAL '4 days',                      'Report Generated',    'Monthly energy report available',          'success', 'System');
+    (uid, 'Main Smart Meter',      'smart_meter', 'offline', NULL),
+    (uid, 'HVAC Smart Thermostat', 'thermostat',  'offline', NULL),
+    (uid, 'Smart Plug #1',         'smart_plug',  'offline', NULL),
+    (uid, 'Smart Plug #3',         'smart_plug',  'offline', NULL);
 
   RETURN NEW;
 END;

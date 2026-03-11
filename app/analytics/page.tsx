@@ -2,8 +2,30 @@ import Layout from "@/components/kokonutui/layout"
 import { createClient } from "@/lib/supabase/server"
 import AnalyticsContent from "@/components/kokonutui/analytics-content"
 import type { MonthlyReading, CategoryBreakdown } from "@/lib/supabase/types"
+import { cookies } from "next/headers"
+import {
+  DEMO_MONTHLY_DATA,
+  DEMO_CATEGORY_DATA,
+  DEMO_TIME_OF_USE,
+} from "@/lib/demo-data"
 
 export default async function AnalyticsPage() {
+  const cookieStore = await cookies()
+  const isDemoMode = cookieStore.get("iw_demo_mode")?.value === "1"
+
+  if (isDemoMode) {
+    return (
+      <Layout>
+        <AnalyticsContent
+          monthlyData={DEMO_MONTHLY_DATA}
+          categoryData={DEMO_CATEGORY_DATA}
+          timeOfUseData={DEMO_TIME_OF_USE}
+          isDemoMode
+        />
+      </Layout>
+    )
+  }
+
   const supabase = await createClient()
 
   const [

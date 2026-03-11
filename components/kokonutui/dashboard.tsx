@@ -1,10 +1,34 @@
 import Content from "./content"
 import Layout from "./layout"
 import { createClient } from "@/lib/supabase/server"
+import { cookies } from "next/headers"
+import {
+  DEMO_HOURLY_DATA,
+  DEMO_WEEKLY_DATA,
+  DEMO_METRICS,
+} from "@/lib/demo-data"
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 export default async function Dashboard() {
+  const cookieStore = await cookies()
+  const isDemoMode = cookieStore.get("iw_demo_mode")?.value === "1"
+
+  if (isDemoMode) {
+    return (
+      <Layout>
+        <Content
+          hourlyData={DEMO_HOURLY_DATA}
+          weeklyData={DEMO_WEEKLY_DATA}
+          currentKw={DEMO_METRICS.currentKw}
+          todayKwh={DEMO_METRICS.todayKwh}
+          monthlyAvgKwh={DEMO_METRICS.monthlyAvgKwh}
+          isDemoMode
+        />
+      </Layout>
+    )
+  }
+
   const supabase = await createClient()
 
   const [
@@ -38,14 +62,14 @@ export default async function Dashboard() {
     kWh: Number(r.kwh_total),
   }))
 
-  const currentKw = hourlyData.at(-1)?.kw_usage ?? 2.4
-  const todayKwh = Number(dailyRows?.at(-1)?.kwh_total ?? 45.2)
+  const currentKw = hourlyData.at(-1)?.kw_usage ?? 0
+  const todayKwh = Number(dailyRows?.at(-1)?.kwh_total ?? 0)
   const monthlyAvgKwh = monthlyRows?.length
     ? Math.round(
         monthlyRows.reduce((s, r) => s + Number(r.kwh_total), 0) /
           monthlyRows.length
       )
-    : 1245
+    : 0
 
   return (
     <Layout>
