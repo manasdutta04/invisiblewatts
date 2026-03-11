@@ -42,6 +42,7 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
   const getPageLabel = (path: string): string => {
     switch (path) {
       case "/dashboard": return "Dashboard"
+      case "/upload": return "Upload Data"
       case "/activity": return "Activity"
       case "/analytics": return "Analytics"
       case "/reports": return "Reports"
