@@ -1,12 +1,11 @@
 "use client"
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bell, ChevronRight } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import Profile01 from "./profile-01"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { memo, useMemo, useState, useEffect } from "react"
-import NotificationsModal from "@/components/notifications-modal"
 import { createClient } from "@/lib/supabase/client"
 
 interface BreadcrumbItem {
@@ -16,7 +15,6 @@ interface BreadcrumbItem {
 
 const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
   const pathname = usePathname()
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [userName, setUserName] = useState("")
   const [userEmail, setUserEmail] = useState("")
 
@@ -88,15 +86,6 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-0">
-        <button
-          type="button"
-          onClick={() => setNotificationsOpen(true)}
-          className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-[#1F1F23] rounded-full transition-colors"
-        >
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-300" />
-        </button>
-        <NotificationsModal open={notificationsOpen} onOpenChange={setNotificationsOpen} />
-
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full ring-2 ring-gray-200 dark:ring-[#2B2B30] bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center cursor-pointer">

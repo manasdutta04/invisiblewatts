@@ -25,14 +25,14 @@ export async function updateGoals(formData: FormData) {
   } = await supabase.auth.getUser()
   if (!user) return
 
-  const daily = Number(formData.get("daily_kwh_target"))
-  const budget = Number(formData.get("monthly_budget_dollars"))
+  const dailyCo2 = Number(formData.get("daily_co2_target"))
+  const weeklyHours = Number(formData.get("weekly_screen_time"))
 
   await supabase
     .from("user_preferences")
     .update({
-      daily_kwh_target: isNaN(daily) ? 60 : daily,
-      monthly_budget_dollars: isNaN(budget) ? 300 : budget,
+      daily_kwh_target: isNaN(dailyCo2) ? 500 : dailyCo2,
+      monthly_budget_dollars: isNaN(weeklyHours) ? 21 : weeklyHours,
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", user.id)
@@ -40,25 +40,20 @@ export async function updateGoals(formData: FormData) {
   revalidatePath("/settings")
 }
 
-export async function updateNotifications(formData: FormData) {
+export async function clearUsageData() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return
 
-  const notifications = {
-    peak_usage: formData.get("peak_usage") === "on",
-    daily_summary: formData.get("daily_summary") === "on",
-    weekly_report: formData.get("weekly_report") === "on",
-    device_offline: formData.get("device_offline") === "on",
-    maintenance: formData.get("maintenance") === "on",
-  }
-
-  await supabase
-    .from("user_preferences")
-    .update({ notifications, updated_at: new Date().toISOString() })
-    .eq("user_id", user.id)
+  await Promise.all([
+    supabase.from("usage_entries").delete().eq("user_id", user.id),
+    supabase.from("ai_analysis").delete().eq("user_id", user.id),
+  ])
 
   revalidatePath("/settings")
+  revalidatePath("/dashboard")
+  revalidatePath("/reports")
+  revalidatePath("/ai-insights")
 }

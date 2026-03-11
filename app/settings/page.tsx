@@ -10,17 +10,16 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: profile }, { data: prefs }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user?.id ?? "")
-      .single(),
-    supabase
-      .from("user_preferences")
-      .select("*")
-      .eq("user_id", user?.id ?? "")
-      .single(),
+  const [
+    { data: profile },
+    { data: prefs },
+    { count: entryCount },
+    { count: analysisCount },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user?.id ?? "").single(),
+    supabase.from("user_preferences").select("*").eq("user_id", user?.id ?? "").single(),
+    supabase.from("usage_entries").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
+    supabase.from("ai_analysis").select("*", { count: "exact", head: true }).eq("user_id", user?.id ?? ""),
   ])
 
   return (
@@ -28,6 +27,8 @@ export default async function SettingsPage() {
       <SettingsContent
         profile={profile as Profile | null}
         prefs={prefs as UserPreferences | null}
+        entryCount={entryCount ?? 0}
+        analysisCount={analysisCount ?? 0}
       />
     </Layout>
   )
