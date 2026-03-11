@@ -5,6 +5,7 @@ import {
   Activity,
   TrendingUp,
   FileText,
+  Zap,
   Settings,
   HelpCircle,
   Menu,
