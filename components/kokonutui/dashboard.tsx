@@ -2,13 +2,6 @@ import Content from "./content"
 import Layout from "./layout"
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
-import {
-  DEMO_HOURLY_DATA,
-  DEMO_WEEKLY_DATA,
-  DEMO_METRICS,
-} from "@/lib/demo-data"
-
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 export default async function Dashboard() {
   const cookieStore = await cookies()
@@ -18,11 +11,26 @@ export default async function Dashboard() {
     return (
       <Layout>
         <Content
-          hourlyData={DEMO_HOURLY_DATA}
-          weeklyData={DEMO_WEEKLY_DATA}
-          currentKw={DEMO_METRICS.currentKw}
-          todayKwh={DEMO_METRICS.todayKwh}
-          monthlyAvgKwh={DEMO_METRICS.monthlyAvgKwh}
+          totalCo2={3840}
+          totalHours={42.5}
+          totalEntries={28}
+          co2Sessions={[
+            { date: "Jan 10", co2: 820 },
+            { date: "Jan 24", co2: 1240 },
+            { date: "Feb 8", co2: 680 },
+            { date: "Feb 22", co2: 1100 },
+          ]}
+          deviceHours={[
+            { device: "Laptop", hours: 28.5 },
+            { device: "Phone", hours: 11.0 },
+            { device: "Tablet", hours: 3.0 },
+          ]}
+          latestRecs={[
+            "Switch video streaming from 4K to HD to cut streaming CO₂ by up to 70%.",
+            "Set your laptop to auto-sleep after 5 minutes of inactivity.",
+            "Use dark mode on OLED screens — it reduces display energy by ~20%.",
+          ]}
+          latestSummary="Your digital activity produced approximately 3.8 kg CO₂. Laptop streaming accounts for the largest share."
           isDemoMode
         />
       </Layout>
@@ -30,55 +38,54 @@ export default async function Dashboard() {
   }
 
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const [
-    { data: hourlyRows },
-    { data: dailyRows },
-    { data: monthlyRows },
-  ] = await Promise.all([
+  const [{ data: analyses }, { data: entries }] = await Promise.all([
     supabase
-      .from("hourly_readings")
-      .select("hour_label, kw_usage, kw_target")
-      .order("recorded_at", { ascending: true }),
+      .from("ai_analysis")
+      .select("id, co2_estimate_grams, entry_count, created_at, summary, recommendations")
+      .eq("user_id", user?.id ?? "")
+      .order("created_at", { ascending: true })
+      .limit(20),
     supabase
-      .from("daily_readings")
-      .select("date, kwh_total")
-      .order("date", { ascending: true })
-      .limit(7),
-    supabase
-      .from("monthly_readings")
-      .select("kwh_total")
-      .order("sort_order", { ascending: true }),
+      .from("usage_entries")
+      .select("date, device_type, daily_hours, activity_type")
+      .eq("user_id", user?.id ?? ""),
   ])
 
-  const hourlyData = (hourlyRows ?? []).map((r) => ({
-    hour_label: r.hour_label,
-    kw_usage: Number(r.kw_usage),
-    kw_target: Number(r.kw_target),
+  const totalCo2 = (analyses ?? []).reduce((s, a) => s + (a.co2_estimate_grams ?? 0), 0)
+  const totalHours = (entries ?? []).reduce((s, e) => s + Number(e.daily_hours), 0)
+  const totalEntries = entries?.length ?? 0
+
+  const co2Sessions = (analyses ?? []).map((a) => ({
+    date: new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    co2: Math.round(a.co2_estimate_grams ?? 0),
   }))
 
-  const weeklyData = (dailyRows ?? []).map((r) => ({
-    day: DAYS[new Date(r.date + "T12:00:00").getDay()],
-    kWh: Number(r.kwh_total),
+  const deviceMap: Record<string, number> = {}
+  for (const e of entries ?? []) {
+    deviceMap[e.device_type] = (deviceMap[e.device_type] ?? 0) + Number(e.daily_hours)
+  }
+  const deviceHours = Object.entries(deviceMap).map(([device, hours]) => ({
+    device: device.charAt(0).toUpperCase() + device.slice(1),
+    hours: Math.round(hours * 10) / 10,
   }))
 
-  const currentKw = hourlyData.at(-1)?.kw_usage ?? 0
-  const todayKwh = Number(dailyRows?.at(-1)?.kwh_total ?? 0)
-  const monthlyAvgKwh = monthlyRows?.length
-    ? Math.round(
-        monthlyRows.reduce((s, r) => s + Number(r.kwh_total), 0) /
-          monthlyRows.length
-      )
-    : 0
+  const latestRecs = (analyses?.at(-1)?.recommendations ?? []) as string[]
+  const latestSummary = analyses?.at(-1)?.summary ?? null
 
   return (
     <Layout>
       <Content
-        hourlyData={hourlyData}
-        weeklyData={weeklyData}
-        currentKw={currentKw}
-        todayKwh={todayKwh}
-        monthlyAvgKwh={monthlyAvgKwh}
+        totalCo2={totalCo2}
+        totalHours={totalHours}
+        totalEntries={totalEntries}
+        co2Sessions={co2Sessions}
+        deviceHours={deviceHours}
+        latestRecs={latestRecs}
+        latestSummary={latestSummary}
       />
     </Layout>
   )

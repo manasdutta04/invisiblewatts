@@ -9,16 +9,25 @@ export default async function AIInsightsPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { data: analyses } = await supabase
-    .from("ai_analysis")
-    .select("*")
-    .eq("user_id", user?.id ?? "")
-    .order("created_at", { ascending: false })
-    .limit(20)
+  const [{ data: analyses }, { count: entryCount }] = await Promise.all([
+    supabase
+      .from("ai_analysis")
+      .select("*")
+      .eq("user_id", user?.id ?? "")
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("usage_entries")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user?.id ?? ""),
+  ])
 
   return (
     <Layout>
-      <AiInsightsContent analyses={(analyses ?? []) as AiAnalysis[]} />
+      <AiInsightsContent
+        analyses={(analyses ?? []) as AiAnalysis[]}
+        entryCount={entryCount ?? 0}
+      />
     </Layout>
   )
 }

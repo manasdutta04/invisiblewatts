@@ -18,7 +18,7 @@ import { createClient } from "@/lib/supabase/client"
 import type { UsageEntryInput } from "@/lib/supabase/types"
 
 const DEVICE_TYPES = ["phone", "laptop", "tablet"] as const
-const ACTIVITY_TYPES = ["streaming", "browsing", "gaming", "calls", "mixed"] as const
+const ACTIVITY_TYPES = ["streaming", "browsing", "social", "gaming", "calls", "productivity", "mixed"] as const
 
 type DeviceType = typeof DEVICE_TYPES[number]
 type ActivityType = typeof ACTIVITY_TYPES[number]
@@ -90,7 +90,7 @@ export default function UploadContent({ existingEntryCount }: { existingEntryCou
 
         const entries: UsageEntryInput[] = data.entries ?? []
         if (entries.length === 0) {
-          showToast("error", "No usage data found in image. Try a clearer screenshot.")
+          showToast("error", "Couldn't extract data. Try iOS Screen Time, Android Digital Wellbeing, or Windows Power & Battery screenshots.")
         } else {
           setExtractedEntries(entries)
         }

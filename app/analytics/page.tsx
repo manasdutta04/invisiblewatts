@@ -1,13 +1,7 @@
 import Layout from "@/components/kokonutui/layout"
 import { createClient } from "@/lib/supabase/server"
 import AnalyticsContent from "@/components/kokonutui/analytics-content"
-import type { MonthlyReading, CategoryBreakdown } from "@/lib/supabase/types"
 import { cookies } from "next/headers"
-import {
-  DEMO_MONTHLY_DATA,
-  DEMO_CATEGORY_DATA,
-  DEMO_TIME_OF_USE,
-} from "@/lib/demo-data"
 
 export default async function AnalyticsPage() {
   const cookieStore = await cookies()
@@ -17,9 +11,27 @@ export default async function AnalyticsPage() {
     return (
       <Layout>
         <AnalyticsContent
-          monthlyData={DEMO_MONTHLY_DATA}
-          categoryData={DEMO_CATEGORY_DATA}
-          timeOfUseData={DEMO_TIME_OF_USE}
+          co2Trend={[
+            { date: "Jan 10", co2: 820 },
+            { date: "Jan 24", co2: 1240 },
+            { date: "Feb 8", co2: 680 },
+            { date: "Feb 22", co2: 1100 },
+          ]}
+          deviceBreakdown={[
+            { device: "Laptop", hours: 28.5 },
+            { device: "Phone", hours: 11.0 },
+            { device: "Tablet", hours: 3.0 },
+          ]}
+          activityBreakdown={[
+            { activity: "Browsing", hours: 18.0 },
+            { activity: "Streaming", hours: 12.5 },
+            { activity: "Gaming", hours: 7.0 },
+            { activity: "Calls", hours: 3.5 },
+            { activity: "Mixed", hours: 1.5 },
+          ]}
+          totalCo2={3840}
+          totalHours={42.5}
+          uniqueDays={14}
           isDemoMode
         />
       </Layout>
@@ -27,49 +39,56 @@ export default async function AnalyticsPage() {
   }
 
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const [
-    { data: monthlyRows },
-    { data: categoryRows },
-    { data: hourlyRows },
-  ] = await Promise.all([
+  const [{ data: analyses }, { data: entries }] = await Promise.all([
     supabase
-      .from("monthly_readings")
-      .select("*")
-      .order("sort_order", { ascending: true }),
+      .from("ai_analysis")
+      .select("co2_estimate_grams, created_at")
+      .eq("user_id", user?.id ?? "")
+      .order("created_at", { ascending: true }),
     supabase
-      .from("category_breakdown")
-      .select("*")
-      .order("percentage", { ascending: false }),
-    supabase
-      .from("hourly_readings")
-      .select("hour_label, kw_usage")
-      .order("recorded_at", { ascending: true }),
+      .from("usage_entries")
+      .select("device_type, daily_hours, activity_type, date")
+      .eq("user_id", user?.id ?? ""),
   ])
 
-  // Aggregate hourly readings into 4 time blocks
-  const blocks = [
-    { period: "00:00–06:00", hours: ["00", "01", "02", "03", "04", "05"] },
-    { period: "06:00–12:00", hours: ["06", "07", "08", "09", "10", "11"] },
-    { period: "12:00–18:00", hours: ["12", "13", "14", "15", "16", "17"] },
-    { period: "18:00–24:00", hours: ["18", "19", "20", "21", "22", "23"] },
-  ]
-
-  const timeOfUseData = blocks.map((block) => ({
-    period: block.period,
-    usage: Math.round(
-      (hourlyRows ?? [])
-        .filter((r) => block.hours.some((h) => r.hour_label.startsWith(h)))
-        .reduce((sum, r) => sum + Number(r.kw_usage), 0)
-    ),
+  const co2Trend = (analyses ?? []).map((a) => ({
+    date: new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    co2: Math.round(a.co2_estimate_grams ?? 0),
   }))
+
+  const deviceMap: Record<string, number> = {}
+  const activityMap: Record<string, number> = {}
+  for (const e of entries ?? []) {
+    deviceMap[e.device_type] = (deviceMap[e.device_type] ?? 0) + Number(e.daily_hours)
+    activityMap[e.activity_type] = (activityMap[e.activity_type] ?? 0) + Number(e.daily_hours)
+  }
+
+  const deviceBreakdown = Object.entries(deviceMap).map(([device, hours]) => ({
+    device: device.charAt(0).toUpperCase() + device.slice(1),
+    hours: Math.round(hours * 10) / 10,
+  }))
+  const activityBreakdown = Object.entries(activityMap).map(([activity, hours]) => ({
+    activity: activity.charAt(0).toUpperCase() + activity.slice(1),
+    hours: Math.round(hours * 10) / 10,
+  }))
+
+  const totalCo2 = (analyses ?? []).reduce((s, a) => s + (a.co2_estimate_grams ?? 0), 0)
+  const totalHours = (entries ?? []).reduce((s, e) => s + Number(e.daily_hours), 0)
+  const uniqueDays = new Set((entries ?? []).map((e) => e.date)).size
 
   return (
     <Layout>
       <AnalyticsContent
-        monthlyData={(monthlyRows ?? []) as MonthlyReading[]}
-        categoryData={(categoryRows ?? []) as CategoryBreakdown[]}
-        timeOfUseData={timeOfUseData}
+        co2Trend={co2Trend}
+        deviceBreakdown={deviceBreakdown}
+        activityBreakdown={activityBreakdown}
+        totalCo2={totalCo2}
+        totalHours={totalHours}
+        uniqueDays={uniqueDays}
       />
     </Layout>
   )

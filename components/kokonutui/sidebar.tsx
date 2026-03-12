@@ -13,10 +13,12 @@ import {
   Upload,
 } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useState, memo, useCallback, useEffect, useTransition } from "react"
 import { toggleDemoMode } from "@/app/demo/actions"
 
 const Sidebar = memo(() => {
+  const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -45,16 +47,16 @@ const Sidebar = memo(() => {
     icon: any
     children: React.ReactNode
   }) {
+    const isActive = pathname === href
     return (
       <Link
         href={href}
-        onClick={(e) => {
-          handleNavigation()
-          if ('startViewTransition' in document) {
-            (document as any).startViewTransition(() => {})
-          }
-        }}
-        className="flex items-center px-3 py-2 text-sm rounded-md transition-colors text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-[#1F1F23]"
+        onClick={() => handleNavigation()}
+        className={`flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+          isActive
+            ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-medium"
+            : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-[#1F1F23]"
+        }`}
       >
         <Icon className="h-4 w-4 mr-3 flex-shrink-0" />
         {children}

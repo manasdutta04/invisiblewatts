@@ -9,8 +9,10 @@ const CO2_BASE: Record<string, number> = { phone: 0.4, laptop: 10, tablet: 3 }
 const ACTIVITY_MULT: Record<string, number> = {
   streaming: 3,
   gaming: 2,
+  social: 2,
   calls: 1.5,
   browsing: 1,
+  productivity: 0.7,
   mixed: 1.2,
 }
 
@@ -63,36 +65,74 @@ export async function POST(req: NextRequest) {
             },
             {
               type: "text",
-              text: `You are analyzing a screenshot of a device screen time or digital wellbeing report. Extract all usage data visible.
+              text: `You are an AI that extracts digital device usage data from screenshots. You handle ALL of these formats:
 
-Return ONLY a JSON object (no markdown, no explanation):
+SUPPORTED FORMATS:
+1. iOS Screen Time — shows daily/weekly totals per app or by category
+2. Android Digital Wellbeing — shows app usage bars and hours/minutes
+3. Windows Screen Time / Digital Wellbeing
+4. Windows Power & Battery (Settings > System > Power & battery > Battery usage)
+5. macOS Screen Time
+6. Any other app usage, battery usage, or screen time report
+
+IOS / MACOS SCREEN TIME — CATEGORY VIEW RULES:
+When you see a breakdown by category (Social, Entertainment, Other, Productivity, Games, etc.) — this includes "All Devices" or single device views:
+- Create ONE ENTRY PER CATEGORY that has a visible time value
+- Map each category to activity_type:
+  * Social, TikTok, Instagram, Twitter/X, Facebook, Reddit → "social"
+  * Entertainment, YouTube, Netflix, Spotify, music/video → "streaming"
+  * Games → "gaming"
+  * Communication, Phone, WhatsApp, Messages, FaceTime → "calls"
+  * Productivity, Finance, Creativity, Documents, Email, Calendar → "productivity"
+  * Information & Reading, News, Education, Travel, Safari, Browser → "browsing"
+  * Other, Health, Fitness → "mixed"
+- daily_hours = the category's time value converted to hours (e.g. 2h 12m → 2.2, 45m → 0.8)
+- Skip any category with less than 5 minutes of usage (e.g. "57s", "10s" → skip)
+- All entries share the same date and device_type
+
+IOS / MACOS SCREEN TIME — SINGLE TOTAL VIEW RULES:
+When you see a single total (e.g. "9h 33m" for the whole day):
+- Create ONE entry with that total as daily_hours
+- Infer activity_type from app names visible (Social/Safari → browsing, etc.)
+
+WINDOWS POWER & BATTERY RULES:
+- Device type = "laptop"
+- Sum ALL "In use (Xmin)" values across every visible app to get total active minutes
+- Convert total minutes to hours (e.g. 45 min → 0.8h, 90 min → 1.5h)
+- If total is under 30 minutes, still output at least 0.5 daily_hours
+- Determine activity_type from which apps dominate
+
+GENERAL RULES:
+- TODAY is ${new Date().toISOString().slice(0, 10)} — use this EXACT date if no date is shown, or if the screenshot shows a day/month without a year (DO NOT use 2024 or any past year)
+- If a date is shown with day + month only (e.g. "12 March"), use the current year: ${new Date().getFullYear()}
+- Infer device: iOS/Android UI → "phone", Windows/macOS settings → "laptop", iPad → "tablet"
+- ALWAYS return at least one entry if ANY usage data is visible
+- daily_hours minimum is 0.5 per entry
+
+Return ONLY this JSON (no markdown, no explanation):
 {
   "entries": [
     {
       "date": "YYYY-MM-DD",
       "device_type": "phone" | "laptop" | "tablet",
-      "daily_hours": <number with 1 decimal>,
-      "activity_type": "streaming" | "browsing" | "gaming" | "calls" | "mixed"
+      "daily_hours": <number, 1 decimal, min 0.5>,
+      "activity_type": "streaming" | "browsing" | "gaming" | "calls" | "social" | "productivity" | "mixed"
     }
   ]
-}
-
-Rules:
-- Use today's date (${new Date().toISOString().slice(0, 10)}) if no date is visible
-- Infer device type from context or UI style (iOS/Android → phone, Windows/Mac → laptop)
-- Map app categories: video/Netflix/YouTube → streaming, social/browser/news → browsing, games → gaming, phone/WhatsApp/Facetime → calls, everything else → mixed
-- If multiple days shown, one entry per day
-- daily_hours should reflect total screen on time`,
+}`,
             },
           ],
         },
       ],
       temperature: 0.1,
-      max_tokens: 1024,
+      max_tokens: 2048,
     })
 
+    // Strip markdown code fences the model sometimes adds
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim()
+
     try {
-      const parsed = JSON.parse(raw) as { entries: UsageEntryInput[] }
+      const parsed = JSON.parse(cleaned) as { entries: UsageEntryInput[] }
       return NextResponse.json({ entries: parsed.entries ?? [] })
     } catch {
       return NextResponse.json({ entries: [] })
@@ -130,7 +170,7 @@ Rules:
 - Phone: 0.4 gCO₂/hour (avg 0.5W device + 0.1W network)
 - Laptop: 10 gCO₂/hour (~25W avg + network)
 - Tablet: 3 gCO₂/hour (~5W avg + network)
-Activity multipliers (server-side emissions): streaming×3, gaming×2, calls×1.5, browsing×1, mixed×1.2
+Activity multipliers (server-side emissions): streaming×3, gaming×2, social×2, calls×1.5, mixed×1.2, browsing×1, productivity×0.7
 Respond ONLY with valid JSON, no markdown.`,
         },
         {

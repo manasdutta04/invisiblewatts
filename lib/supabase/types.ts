@@ -198,7 +198,7 @@ export interface UsageEntry {
   date: string            // DATE as ISO string
   device_type: "phone" | "laptop" | "tablet"
   daily_hours: number
-  activity_type: "streaming" | "browsing" | "gaming" | "calls" | "mixed"
+  activity_type: "streaming" | "browsing" | "gaming" | "calls" | "social" | "productivity" | "mixed"
   notes: string | null
   created_at: string
 }
@@ -218,6 +218,6 @@ export interface UsageEntryInput {
   date: string
   device_type: "phone" | "laptop" | "tablet"
   daily_hours: number
-  activity_type: "streaming" | "browsing" | "gaming" | "calls" | "mixed"
+  activity_type: "streaming" | "browsing" | "gaming" | "calls" | "social" | "productivity" | "mixed"
   notes?: string
 }
