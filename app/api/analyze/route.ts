@@ -97,10 +97,20 @@ When you see a single total (e.g. "9h 33m" for the whole day):
 
 WINDOWS POWER & BATTERY RULES:
 - Device type = "laptop"
-- Sum ALL "In use (Xmin)" values across every visible app to get total active minutes
-- Convert total minutes to hours (e.g. 45 min → 0.8h, 90 min → 1.5h)
-- If total is under 30 minutes, still output at least 0.5 daily_hours
-- Determine activity_type from which apps dominate
+- Read each app's "In use (Xh Ym)" or "Xmin" active time from the list
+- Group apps by activity_type using these mappings:
+  * Edge, Chrome, Firefox, Opera, browser → "browsing"
+  * Netflix, YouTube, Prime Video, Disney+, Spotify, VLC, media player, video → "streaming"
+  * Teams, Zoom, Meet, Skype, Discord (voice/video) → "calls"
+  * VS Code, Visual Studio, IntelliJ, PyCharm, Xcode, terminal, cmd, PowerShell, Word, Excel, Outlook, Notepad → "productivity"
+  * Steam, Epic Games, any .exe game launcher → "gaming"
+  * Twitter, Instagram, Facebook, Reddit, TikTok, social → "social"
+  * Anything else → "mixed"
+- Create ONE ENTRY PER ACTIVITY GROUP — sum the "In use" minutes for all apps in that group
+- Convert each group's total minutes to hours (round to 1 decimal, min 0.5)
+- Skip groups with less than 5 minutes total
+- If no "In use" times are visible but battery percentages are shown, estimate from percentage weight
+- All entries share the same date
 
 GENERAL RULES:
 - TODAY is ${new Date().toISOString().slice(0, 10)} — use this EXACT date if no date is shown, or if the screenshot shows a day/month without a year (DO NOT use 2024 or any past year)
