@@ -8,8 +8,9 @@ import { createClient } from "@/lib/supabase/client"
 import {
   BarChart, Bar,
   AreaChart, Area,
+  PieChart, Pie, Cell, Label,
   XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell, ReferenceLine,
+  ResponsiveContainer, ReferenceLine,
 } from "recharts"
 
 interface Co2Session {
@@ -136,10 +137,6 @@ export default function Content({
   const topDevice = deviceHours.slice().sort((a, b) => b.hours - a.hours)[0] ?? null
 
   const fmtCo2 = (g: number) => g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${g} g`
-
-  const avgHours = deviceHours.length
-    ? parseFloat((deviceHours.reduce((s, d) => s + d.hours, 0) / deviceHours.length).toFixed(1))
-    : 0
 
   const greeting = getGreeting()
   const firstName = userName.split(" ")[0]
@@ -412,35 +409,89 @@ export default function Content({
             </div>
           </div>
 
-          {/* Hours by Device */}
-          {deviceHours.length > 0 && (
-            <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Hours by Device</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Total logged hours per device type</p>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={deviceHours} barSize={52}>
-                  <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
-                  <XAxis dataKey="device" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                  <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="h" tick={{ fontSize: 11 }} width={36} />
-                  <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
-                  {deviceHours.length > 1 && (
-                    <ReferenceLine
-                      y={avgHours}
-                      stroke="#fcd34d"
-                      strokeDasharray="5 3"
-                      strokeWidth={1.5}
-                      label={{ value: `avg ${avgHours}h`, position: "insideTopRight", fill: "#fcd34d", fontSize: 10, dy: -8 }}
-                    />
-                  )}
-                  <Bar dataKey="hours" radius={[6, 6, 0, 0]} name="Hours">
-                    {deviceHours.map((entry) => (
-                      <Cell key={entry.device} fill={DEVICE_COLORS[entry.device.toLowerCase()] ?? "#6b7280"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Hours by Device — donut */}
+          <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23]">
+            <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-[#1F1F23]">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Hours by Device</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Distribution of logged screen time</p>
+              </div>
             </div>
-          )}
+            <div className="px-6 pb-6 pt-4 flex flex-col items-center">
+              {deviceHours.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={deviceHours}
+                        dataKey="hours"
+                        nameKey="device"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={65}
+                        outerRadius={95}
+                        paddingAngle={3}
+                        strokeWidth={0}
+                      >
+                        {deviceHours.map((entry) => (
+                          <Cell key={entry.device} fill={DEVICE_COLORS[entry.device.toLowerCase()] ?? "#6b7280"} />
+                        ))}
+                        <Label
+                          content={({ viewBox }) => {
+                            const { cx, cy } = viewBox as { cx: number; cy: number }
+                            const totalHrs = deviceHours.reduce((s, d) => s + d.hours, 0)
+                            return (
+                              <g>
+                                <text x={cx} y={cy - 6} textAnchor="middle" fill="#6366f1" fontSize={22} fontWeight={700}>
+                                  {totalHrs.toFixed(1)}h
+                                </text>
+                                <text x={cx} y={cy + 14} textAnchor="middle" fill="#6b7280" fontSize={11}>
+                                  total hours
+                                </text>
+                              </g>
+                            )
+                          }}
+                        />
+                      </Pie>
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null
+                          const d = payload[0].payload as DeviceHour
+                          const color = DEVICE_COLORS[d.device.toLowerCase()] ?? "#6b7280"
+                          return (
+                            <div style={{ background: "rgba(15,15,18,0.97)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "10px 14px", minWidth: "110px" }}>
+                              <p style={{ color: "#6b7280", fontSize: "11px", marginBottom: "5px" }}>{d.device}</p>
+                              <p style={{ color, fontSize: "15px", fontWeight: 700, margin: 0 }}>{d.hours}h</p>
+                            </div>
+                          )
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Legend */}
+                  <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-1">
+                    {deviceHours.map((d) => {
+                      const total = deviceHours.reduce((s, x) => s + x.hours, 0)
+                      const pct = total > 0 ? Math.round(d.hours / total * 100) : 0
+                      const color = DEVICE_COLORS[d.device.toLowerCase()] ?? "#6b7280"
+                      return (
+                        <div key={d.device} className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{d.device}</span>
+                          <span className="text-xs font-semibold text-gray-900 dark:text-white">{d.hours}h</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">({pct}%)</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-[280px] text-sm text-gray-400 dark:text-gray-500">
+                  No device data yet
+                </div>
+              )}
+            </div>
+          </div>
 
           </div> {/* end charts grid */}
 
