@@ -283,7 +283,7 @@ export default function Content({
             <div className="px-6 pb-6 pt-4">
               {/* ── TODAY ── */}
               {chartTab === "Today" && (() => {
-                const todayCo2 = dailyCo2.at(-1)?.co2 ?? 0
+                const todayCo2 = todayEntries.reduce((s, e) => s + e.co2, 0)
                 const yesterdayCo2 = dailyCo2.at(-2)?.co2 ?? null
                 const diff = yesterdayCo2 ? Math.round((todayCo2 - yesterdayCo2) / Math.max(yesterdayCo2, 1) * 100) : null
                 return (

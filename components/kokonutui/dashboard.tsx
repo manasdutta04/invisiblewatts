@@ -36,7 +36,7 @@ export default async function Dashboard() {
             { day: "Thu", co2: 230 },
             { day: "Fri", co2: 165 },
             { day: "Sat", co2: 312 },
-            { day: "Sun", co2: 95 },
+            { day: "Sun", co2: 116 },
           ]}
           deviceHours={[
             { device: "Laptop", hours: 28.5 },
