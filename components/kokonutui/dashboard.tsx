@@ -3,6 +3,12 @@ import Layout from "./layout"
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 
+const CO2_BASE: Record<string, number> = { phone: 0.4, laptop: 10, tablet: 3 }
+const ACTIVITY_MULT: Record<string, number> = {
+  streaming: 3, gaming: 2, social: 2, calls: 1.5,
+  browsing: 1, productivity: 0.7, mixed: 1.2,
+}
+
 export default async function Dashboard() {
   const cookieStore = await cookies()
   const isDemoMode = cookieStore.get("iw_demo_mode")?.value === "1"
@@ -23,6 +29,15 @@ export default async function Dashboard() {
             { date: "Feb 8", co2: 680 },
             { date: "Feb 22", co2: 1100 },
           ]}
+          dailyCo2={[
+            { day: "Mon", co2: 45 },
+            { day: "Tue", co2: 120 },
+            { day: "Wed", co2: 89 },
+            { day: "Thu", co2: 230 },
+            { day: "Fri", co2: 165 },
+            { day: "Sat", co2: 312 },
+            { day: "Sun", co2: 95 },
+          ]}
           deviceHours={[
             { device: "Laptop", hours: 28.5 },
             { device: "Phone", hours: 11.0 },
@@ -35,15 +50,18 @@ export default async function Dashboard() {
           ]}
           latestSummary="Your digital activity produced approximately 3.8 kg CO₂. Laptop streaming accounts for the largest share."
           isDemoMode
+          todayEntries={[
+            { label: "Laptop·Streaming", hours: 2.5, co2: 75, device: "laptop" },
+            { label: "Phone·Social",     hours: 1.5, co2: 1,  device: "phone"  },
+            { label: "Laptop·Browsing",  hours: 4.0, co2: 40, device: "laptop" },
+          ]}
         />
       </Layout>
     )
   }
 
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const [{ data: analyses }, { data: entries }, { data: profile }] = await Promise.all([
     supabase
@@ -84,6 +102,23 @@ export default async function Dashboard() {
     hours: Math.round(hours * 10) / 10,
   }))
 
+  // Daily CO₂ for last 7 days (computed from usage_entries)
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    return d.toISOString().slice(0, 10)
+  })
+  const dailyMap: Record<string, number> = {}
+  for (const e of entries ?? []) {
+    const base = CO2_BASE[e.device_type] ?? 5
+    const mult = ACTIVITY_MULT[e.activity_type] ?? 1
+    dailyMap[e.date] = (dailyMap[e.date] ?? 0) + base * mult * Number(e.daily_hours)
+  }
+  const dailyCo2 = last7.map((date) => ({
+    day: new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }),
+    co2: Math.round(dailyMap[date] ?? 0),
+  }))
+
   const today = new Date().toISOString().slice(0, 10)
   const latestAnalysisAt = analyses?.at(-1)?.created_at ?? null
   const unanalyzedCount = latestAnalysisAt
@@ -91,6 +126,20 @@ export default async function Dashboard() {
     : (entries?.length ?? 0)
   const hasNewEntries = unanalyzedCount > 0
   const todayEntryCount = (entries ?? []).filter((e) => e.date === today).length
+
+  const todayEntries = (entries ?? [])
+    .filter((e) => e.date === today)
+    .map((e) => {
+      const base = CO2_BASE[e.device_type] ?? 5
+      const mult = ACTIVITY_MULT[e.activity_type] ?? 1
+      const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+      return {
+        label: `${cap(e.device_type)}·${cap(e.activity_type)}`,
+        hours: Number(e.daily_hours),
+        co2: Math.round(base * mult * Number(e.daily_hours)),
+        device: e.device_type,
+      }
+    })
 
   const latestRecs = (analyses?.at(-1)?.recommendations ?? []) as string[]
   const latestSummary = analyses?.at(-1)?.summary ?? null
@@ -104,12 +153,14 @@ export default async function Dashboard() {
         totalEntries={totalEntries}
         analysesCount={analysesCount}
         co2Sessions={co2Sessions}
+        dailyCo2={dailyCo2}
         deviceHours={deviceHours}
         latestRecs={latestRecs}
         latestSummary={latestSummary}
         hasNewEntries={hasNewEntries}
         unanalyzedCount={unanalyzedCount}
         todayEntryCount={todayEntryCount}
+        todayEntries={todayEntries}
       />
     </Layout>
   )

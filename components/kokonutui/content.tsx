@@ -6,15 +6,10 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  ReferenceLine,
+  BarChart, Bar,
+  AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Cell, ReferenceLine,
 } from "recharts"
 
 interface Co2Session {
@@ -27,6 +22,18 @@ interface DeviceHour {
   hours: number
 }
 
+interface DailyCo2 {
+  day: string
+  co2: number
+}
+
+interface TodayEntry {
+  label: string
+  hours: number
+  co2: number
+  device: string
+}
+
 interface ContentProps {
   userName: string
   totalCo2: number
@@ -34,6 +41,8 @@ interface ContentProps {
   totalEntries: number
   analysesCount: number
   todayEntryCount: number
+  todayEntries: TodayEntry[]
+  dailyCo2: DailyCo2[]
   co2Sessions: Co2Session[]
   deviceHours: DeviceHour[]
   latestRecs: string[]
@@ -82,6 +91,8 @@ export default function Content({
   totalEntries,
   analysesCount,
   todayEntryCount,
+  todayEntries,
+  dailyCo2,
   co2Sessions,
   deviceHours,
   latestRecs,
@@ -94,6 +105,7 @@ export default function Content({
   const needsAnalysis = !isDemoMode && ((totalEntries > 0 && co2Sessions.length === 0) || !!hasNewEntries)
   const router = useRouter()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [chartTab, setChartTab] = useState<"Today" | "7D" | "All">("7D")
 
   async function handleRunAnalysis() {
     setIsAnalyzing(true)
@@ -238,72 +250,199 @@ export default function Content({
             />
           </div>
 
-          {/* Charts */}
+          {/* Charts — side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {co2Sessions.length > 0 && (
-              <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-                  CO₂ per Analysis Session
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Grams of CO₂ estimated per run</p>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={co2Sessions} barSize={36}>
-                    <defs>
-                      <linearGradient id="co2Bar" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.65} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.15)" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
-                    <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={40} />
-                    <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
-                    {co2Sessions.length > 1 && (
-                      <ReferenceLine
-                        y={avgCo2}
-                        stroke="#a5b4fc"
-                        strokeDasharray="5 3"
-                        strokeWidth={1.5}
-                        label={{ value: `avg ${avgCo2}g`, position: "insideTopRight", fill: "#a5b4fc", fontSize: 10, dy: -8 }}
-                      />
-                    )}
-                    <Bar dataKey="co2" fill="url(#co2Bar)" radius={[8, 8, 0, 0]} name="CO₂ (g)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
 
-            {deviceHours.length > 0 && (
-              <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-                  Hours by Device
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Total logged hours per device type</p>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={deviceHours} barSize={48}>
-                    <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.15)" />
-                    <XAxis dataKey="device" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                    <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="h" tick={{ fontSize: 11 }} width={36} />
-                    <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
-                    {deviceHours.length > 1 && (
-                      <ReferenceLine
-                        y={avgHours}
-                        stroke="#fcd34d"
-                        strokeDasharray="5 3"
-                        strokeWidth={1.5}
-                        label={{ value: `avg ${avgHours}h`, position: "insideTopRight", fill: "#fcd34d", fontSize: 10, dy: -8 }}
-                      />
-                    )}
-                    <Bar dataKey="hours" radius={[8, 8, 0, 0]} name="Hours">
-                      {deviceHours.map((entry) => (
-                        <Cell key={entry.device} fill={DEVICE_COLORS[entry.device.toLowerCase()] ?? "#6b7280"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+          {/* Trend Chart — tabbed */}
+          <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23]">
+            {/* Card header */}
+            <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-[#1F1F23]">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Digital CO₂ Trend</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {chartTab === "Today" && "Estimated carbon from today's screen time"}
+                  {chartTab === "7D"    && "Daily estimated CO₂ over the last 7 days"}
+                  {chartTab === "All"   && "CO₂ produced per AI analysis session"}
+                </p>
               </div>
-            )}
+              {/* Tab pills */}
+              <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-[#1A1A1F]">
+                {(["Today", "7D", "All"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setChartTab(t)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      chartTab === t
+                        ? "bg-white dark:bg-[#0F0F12] text-gray-900 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 pb-6 pt-4">
+              {/* ── TODAY ── */}
+              {chartTab === "Today" && (() => {
+                const todayCo2 = dailyCo2.at(-1)?.co2 ?? 0
+                const yesterdayCo2 = dailyCo2.at(-2)?.co2 ?? null
+                const diff = yesterdayCo2 ? Math.round((todayCo2 - yesterdayCo2) / Math.max(yesterdayCo2, 1) * 100) : null
+                return (
+                  <div>
+                    {/* Today stat strip */}
+                    <div className="flex items-baseline gap-3 mb-4">
+                      <span className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">{fmtCo2(todayCo2)}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">today</span>
+                      {diff !== null && (
+                        <span className={`text-xs font-medium ${diff <= 0 ? "text-emerald-500" : "text-red-400"}`}>
+                          {diff > 0 ? "+" : ""}{diff}% vs yesterday
+                        </span>
+                      )}
+                      {todayEntryCount > 0 && (
+                        <span className="ml-auto text-xs text-gray-400">{todayEntryCount} {todayEntryCount === 1 ? "entry" : "entries"}</span>
+                      )}
+                    </div>
+                    {todayEntries.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={todayEntries} barSize={48} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                          <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
+                          <XAxis dataKey="label" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
+                          <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={42} />
+                          <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
+                          <Bar dataKey="co2" radius={[6, 6, 0, 0]}>
+                            {todayEntries.map((e, i) => (
+                              <Cell key={i} fill={DEVICE_COLORS[e.device] ?? "#6366f1"} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-[220px] text-sm text-gray-400 dark:text-gray-500">
+                        No entries logged today
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {/* ── 7D ── */}
+              {chartTab === "7D" && (() => {
+                const hasData = dailyCo2.some((d) => d.co2 > 0)
+                const nonZero = dailyCo2.filter((d) => d.co2 > 0)
+                const weekAvg = nonZero.length ? Math.round(nonZero.reduce((s, d) => s + d.co2, 0) / nonZero.length) : 0
+                return (
+                  <ResponsiveContainer width="100%" height={280}>
+                    <AreaChart data={dailyCo2} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                      <defs>
+                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%"   stopColor="#6366f1" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
+                      <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={42} />
+                      <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ stroke: "rgba(99,102,241,0.2)", strokeWidth: 1, strokeDasharray: "4 2" }} />
+                      {hasData && weekAvg > 0 && (
+                        <ReferenceLine
+                          y={weekAvg}
+                          stroke="#a5b4fc"
+                          strokeDasharray="5 3"
+                          strokeWidth={1.5}
+                          label={{ value: `avg ${weekAvg}g`, position: "insideTopRight", fill: "#a5b4fc", fontSize: 10, dy: -8 }}
+                        />
+                      )}
+                      <Area
+                        type="monotone"
+                        dataKey="co2"
+                        stroke="#6366f1"
+                        strokeWidth={2.5}
+                        fill="url(#areaGrad)"
+                        dot={{ r: 3.5, fill: "#6366f1", strokeWidth: 0 }}
+                        activeDot={{ r: 5.5, fill: "#818cf8", strokeWidth: 0 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )
+              })()}
+
+              {/* ── ALL ── */}
+              {chartTab === "All" && (
+                co2Sessions.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={280}>
+                    <AreaChart data={co2Sessions} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                      <defs>
+                        <linearGradient id="areaGradAll" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%"   stopColor="#6366f1" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
+                      <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={42} />
+                      <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ stroke: "rgba(99,102,241,0.2)", strokeWidth: 1, strokeDasharray: "4 2" }} />
+                      {co2Sessions.length > 1 && (
+                        <ReferenceLine
+                          y={avgCo2}
+                          stroke="#a5b4fc"
+                          strokeDasharray="5 3"
+                          strokeWidth={1.5}
+                          label={{ value: `avg ${avgCo2}g`, position: "insideTopRight", fill: "#a5b4fc", fontSize: 10, dy: -8 }}
+                        />
+                      )}
+                      <Area
+                        type="monotone"
+                        dataKey="co2"
+                        stroke="#6366f1"
+                        strokeWidth={2.5}
+                        fill="url(#areaGradAll)"
+                        dot={{ r: 3.5, fill: "#6366f1", strokeWidth: 0 }}
+                        activeDot={{ r: 5.5, fill: "#818cf8", strokeWidth: 0 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[280px] text-sm text-gray-400 dark:text-gray-500">
+                    No analysis sessions yet
+                  </div>
+                )
+              )}
+            </div>
           </div>
+
+          {/* Hours by Device */}
+          {deviceHours.length > 0 && (
+            <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">Hours by Device</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Total logged hours per device type</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={deviceHours} barSize={52}>
+                  <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
+                  <XAxis dataKey="device" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                  <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="h" tick={{ fontSize: 11 }} width={36} />
+                  <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
+                  {deviceHours.length > 1 && (
+                    <ReferenceLine
+                      y={avgHours}
+                      stroke="#fcd34d"
+                      strokeDasharray="5 3"
+                      strokeWidth={1.5}
+                      label={{ value: `avg ${avgHours}h`, position: "insideTopRight", fill: "#fcd34d", fontSize: 10, dy: -8 }}
+                    />
+                  )}
+                  <Bar dataKey="hours" radius={[6, 6, 0, 0]} name="Hours">
+                    {deviceHours.map((entry) => (
+                      <Cell key={entry.device} fill={DEVICE_COLORS[entry.device.toLowerCase()] ?? "#6b7280"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          </div> {/* end charts grid */}
 
           {/* Latest AI recommendations */}
           {latestRecs.length > 0 && (
