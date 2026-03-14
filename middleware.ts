@@ -4,6 +4,15 @@ import { NextResponse, type NextRequest } from "next/server"
 const PUBLIC_ROUTES = new Set(["/login", "/signup", "/terms", "/help"])
 
 export async function middleware(request: NextRequest) {
+  // Guard: if Supabase env vars are missing (e.g. not yet set on Vercel),
+  // pass through rather than crashing with MIDDLEWARE_INVOCATION_FAILED.
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(

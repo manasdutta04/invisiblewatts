@@ -140,6 +140,7 @@ function updateSite(stats) {
   // Favicon via Google's service
   siteFavicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${host}`
   siteFavicon.style.display = "block"
+  siteFavicon.onerror = () => { siteFavicon.style.display = "none" }
 
   // Category tag
   const catStyle = CATEGORY_COLORS[stats.category] || CATEGORY_COLORS.browsing
