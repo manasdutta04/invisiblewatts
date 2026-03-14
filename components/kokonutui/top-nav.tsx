@@ -1,6 +1,7 @@
 "use client"
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ChevronRight } from "lucide-react"
 import Profile01 from "./profile-01"
 import Link from "next/link"
@@ -17,6 +18,7 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
   const pathname = usePathname()
   const [userName, setUserName] = useState("")
   const [userEmail, setUserEmail] = useState("")
+  const [status, setStatus] = useState<{ ok: boolean; reason?: string } | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -35,6 +37,7 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
           })
       }
     })
+    fetch("/api/status").then(r => r.json()).then(setStatus)
   }, [])
 
   const getPageLabel = (path: string): string => {
@@ -61,7 +64,7 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
     [pathname, breadcrumbs]
   )
 
-  const initials = userName ? userName.slice(0, 2).toUpperCase() : "IW"
+  const initial = userName ? userName.slice(0, 1).toUpperCase() : "U"
 
   return (
     <nav className="px-3 sm:px-6 flex items-center justify-between bg-white dark:bg-[#0F0F12] border-b border-gray-200 dark:border-[#1F1F23] h-full">
@@ -85,11 +88,40 @@ const TopNav = memo(({ breadcrumbs }: { breadcrumbs?: BreadcrumbItem[] }) => {
         ))}
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-0">
+      <div className="flex items-center gap-2 sm:gap-3 ml-auto sm:ml-0">
+        {/* Status badge */}
+        {status !== null && (
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-default select-none
+                  ${status.ok
+                    ? "bg-green-500/10 border-green-500/20"
+                    : "bg-red-500/10 border-red-500/20"}`}>
+                  <span className="relative flex h-1.5 w-1.5">
+                    {status.ok && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    )}
+                    <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${status.ok ? "bg-green-500" : "bg-red-500"}`} />
+                  </span>
+                  <span className={`text-xs font-medium ${status.ok ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    Status: {status.ok ? "OK" : "Down"}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              {!status.ok && status.reason && (
+                <TooltipContent side="bottom" className="text-xs">
+                  {status.reason}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full ring-2 ring-gray-200 dark:ring-[#2B2B30] bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center cursor-pointer">
-              <span className="text-white text-xs font-bold">{initials}</span>
+              <span className="text-white text-xs font-bold">{initial}</span>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent
