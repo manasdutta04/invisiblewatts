@@ -11,6 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  ReferenceLine,
 } from "recharts"
 import { Leaf, Clock, CalendarDays, FlaskConical, PlugZap } from "lucide-react"
 import Link from "next/link"
@@ -80,6 +81,16 @@ export default function AnalyticsContent({
   isDemoMode?: boolean
 }) {
   const isEmpty = co2Trend.length === 0 && deviceBreakdown.length === 0
+
+  const avgCo2 = co2Trend.length
+    ? Math.round(co2Trend.reduce((s, d) => s + d.co2, 0) / co2Trend.length)
+    : 0
+  const avgDeviceHours = deviceBreakdown.length
+    ? parseFloat((deviceBreakdown.reduce((s, d) => s + d.hours, 0) / deviceBreakdown.length).toFixed(1))
+    : 0
+  const avgActivityHours = activityBreakdown.length
+    ? parseFloat((activityBreakdown.reduce((s, d) => s + d.hours, 0) / activityBreakdown.length).toFixed(1))
+    : 0
 
   return (
     <div className="space-y-6">
@@ -158,23 +169,32 @@ export default function AnalyticsContent({
                 <AreaChart data={co2Trend}>
                   <defs>
                     <linearGradient id="co2Area" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.15)" />
                   <XAxis dataKey="date" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
                   <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={44} />
-                  <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ stroke: "#10b981", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                  <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ stroke: "#0ea5e9", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                  {co2Trend.length > 1 && (
+                    <ReferenceLine
+                      y={avgCo2}
+                      stroke="#7dd3fc"
+                      strokeDasharray="5 3"
+                      strokeWidth={1.5}
+                      label={{ value: `avg ${avgCo2}g`, position: "insideTopRight", fill: "#7dd3fc", fontSize: 10, dy: -8 }}
+                    />
+                  )}
                   <Area
                     type="monotone"
                     dataKey="co2"
                     fill="url(#co2Area)"
-                    stroke="#10b981"
+                    stroke="#0ea5e9"
                     strokeWidth={2.5}
                     fillOpacity={1}
-                    dot={{ r: 4, fill: "#fff", stroke: "#10b981", strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: "#10b981", stroke: "#fff", strokeWidth: 2 }}
+                    dot={{ r: 4, fill: "#fff", stroke: "#0ea5e9", strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: "#0ea5e9", stroke: "#fff", strokeWidth: 2 }}
                     name="CO₂ (g)"
                   />
                 </AreaChart>
@@ -196,6 +216,15 @@ export default function AnalyticsContent({
                     <XAxis dataKey="device" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 12 }} />
                     <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="h" tick={{ fontSize: 11 }} width={36} />
                     <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
+                    {deviceBreakdown.length > 1 && (
+                      <ReferenceLine
+                        y={avgDeviceHours}
+                        stroke="#fcd34d"
+                        strokeDasharray="5 3"
+                        strokeWidth={1.5}
+                        label={{ value: `avg ${avgDeviceHours}h`, position: "insideTopRight", fill: "#fcd34d", fontSize: 10, dy: -8 }}
+                      />
+                    )}
                     <Bar dataKey="hours" radius={[8, 8, 0, 0]}>
                       {deviceBreakdown.map((entry) => (
                         <Cell key={entry.device} fill={DEVICE_COLORS[entry.device ?? ""] ?? "#6b7280"} />
@@ -218,6 +247,15 @@ export default function AnalyticsContent({
                     <XAxis dataKey="activity" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
                     <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="h" tick={{ fontSize: 11 }} width={36} />
                     <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
+                    {activityBreakdown.length > 1 && (
+                      <ReferenceLine
+                        y={avgActivityHours}
+                        stroke="#d8b4fe"
+                        strokeDasharray="5 3"
+                        strokeWidth={1.5}
+                        label={{ value: `avg ${avgActivityHours}h`, position: "insideTopRight", fill: "#d8b4fe", fontSize: 10, dy: -8 }}
+                      />
+                    )}
                     <Bar dataKey="hours" radius={[8, 8, 0, 0]}>
                       {activityBreakdown.map((entry) => (
                         <Cell key={entry.activity} fill={ACTIVITY_COLORS[entry.activity ?? ""] ?? "#6b7280"} />

@@ -14,6 +14,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  ReferenceLine,
 } from "recharts"
 
 interface Co2Session {
@@ -55,7 +56,7 @@ function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payl
       minWidth: "110px",
     }}>
       {label && <p style={{ color: "#6b7280", fontSize: "11px", marginBottom: "5px" }}>{label}</p>}
-      <p style={{ color: payload[0].fill && payload[0].fill !== "url(#co2Bar)" ? payload[0].fill : "#10b981", fontSize: "15px", fontWeight: 700, margin: 0 }}>
+      <p style={{ color: payload[0].fill && payload[0].fill !== "url(#co2Bar)" ? payload[0].fill : "#818cf8", fontSize: "15px", fontWeight: 700, margin: 0 }}>
         {payload[0].value} {unit}
       </p>
     </div>
@@ -97,6 +98,13 @@ export default function Content({
       setIsAnalyzing(false)
     }
   }
+
+  const avgCo2 = co2Sessions.length
+    ? Math.round(co2Sessions.reduce((s, d) => s + d.co2, 0) / co2Sessions.length)
+    : 0
+  const avgHours = deviceHours.length
+    ? parseFloat((deviceHours.reduce((s, d) => s + d.hours, 0) / deviceHours.length).toFixed(1))
+    : 0
 
   return (
     <div className="space-y-6">
@@ -190,14 +198,23 @@ export default function Content({
                   <BarChart data={co2Sessions} barSize={36}>
                     <defs>
                       <linearGradient id="co2Bar" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#059669" stopOpacity={0.6} />
+                        <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.65} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.15)" />
                     <XAxis dataKey="date" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
                     <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={40} />
-                    <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ fill: "rgba(16,185,129,0.06)", radius: 6 }} />
+                    <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
+                    {co2Sessions.length > 1 && (
+                      <ReferenceLine
+                        y={avgCo2}
+                        stroke="#a5b4fc"
+                        strokeDasharray="5 3"
+                        strokeWidth={1.5}
+                        label={{ value: `avg ${avgCo2}g`, position: "insideTopRight", fill: "#a5b4fc", fontSize: 10, dy: -8 }}
+                      />
+                    )}
                     <Bar dataKey="co2" fill="url(#co2Bar)" radius={[8, 8, 0, 0]} name="CO₂ (g)" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -216,6 +233,15 @@ export default function Content({
                     <XAxis dataKey="device" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 12 }} />
                     <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="h" tick={{ fontSize: 11 }} width={36} />
                     <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: "rgba(99,102,241,0.06)", radius: 6 }} />
+                    {deviceHours.length > 1 && (
+                      <ReferenceLine
+                        y={avgHours}
+                        stroke="#fcd34d"
+                        strokeDasharray="5 3"
+                        strokeWidth={1.5}
+                        label={{ value: `avg ${avgHours}h`, position: "insideTopRight", fill: "#fcd34d", fontSize: 10, dy: -8 }}
+                      />
+                    )}
                     <Bar dataKey="hours" radius={[8, 8, 0, 0]} name="Hours">
                       {deviceHours.map((entry) => (
                         <Cell key={entry.device} fill={DEVICE_COLORS[entry.device] ?? "#6b7280"} />
