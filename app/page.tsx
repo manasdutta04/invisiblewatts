@@ -496,6 +496,7 @@ export default async function LandingPage() {
           <div className="flex items-center gap-5 text-xs text-gray-500">
             <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
             <Link href="/help"  className="hover:text-gray-300 transition-colors">Help</Link>
+            <Link href="https://github.com/manasdutta04/invisiblewatts?tab=readme-ov-file#creators" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors">Team</Link>
             <Link href="/login" className="hover:text-gray-300 transition-colors">Sign in</Link>
           </div>
         </div>
