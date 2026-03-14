@@ -1,0 +1,346 @@
+/* ─── Reset + Base ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0F0F12;
+  --card:         #18181c;
+  --card-hover:   #1e1e24;
+  --border:       rgba(255,255,255,0.07);
+  --border-glow:  rgba(16,185,129,0.25);
+  --text:         #f9fafb;
+  --muted:        #9ca3af;
+  --dim:          #6b7280;
+  --green:        #10b981;
+  --green-light:  #34d399;
+  --blue:         #3b82f6;
+  --amber:        #f59e0b;
+  --red:          #ef4444;
+  --radius:       12px;
+  --font:         -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+html { width: 340px; }
+
+body {
+  font-family: var(--font);
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  width: 340px;
+  min-height: 520px;
+  padding: 0 0 8px;
+  overflow-x: hidden;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(16,185,129,0.06) 0%, transparent 100%);
+}
+
+.header-logo {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(16,185,129,0.4);
+  flex-shrink: 0;
+}
+
+.header-brand {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  flex: 1;
+}
+
+.header-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--green);
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+/* ─── Meter Section ──────────────────────────────────────── */
+.meter-section {
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.meter-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.meter-svg {
+  filter: drop-shadow(0 0 20px rgba(16,185,129,0.15));
+  transition: filter 0.5s ease;
+}
+
+#ring-progress {
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.34, 1.06, 0.64, 1),
+              stroke 0.5s ease;
+}
+
+.trend-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px 3px 7px;
+}
+
+.trend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* ─── Metric Pills ──────────────────────────────────────── */
+.metric-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.metric-pill {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 10px 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.metric-pill:hover {
+  background: var(--card-hover);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.metric-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.metric-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.metric-unit {
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 1px;
+}
+
+/* ─── Cards ─────────────────────────────────────────────── */
+.card {
+  margin: 0 12px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.card-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.category-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  color: var(--blue);
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 5px;
+  padding: 2px 7px;
+}
+
+/* ─── Site Card ─────────────────────────────────────────── */
+.site-card {
+  border-color: rgba(255,255,255,0.06);
+}
+
+.site-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.site-favicon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.site-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.site-stat {
+  flex: 1;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.site-stat-label {
+  font-size: 10px;
+  color: var(--dim);
+  margin-bottom: 3px;
+}
+
+.site-stat-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.site-stat-val.green { color: var(--green); }
+.site-stat-val.blue  { color: var(--blue); }
+
+.stat-divider {
+  width: 1px;
+  height: 30px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ─── Tip Card ──────────────────────────────────────────── */
+.tip-card {
+  border-color: rgba(245,158,11,0.12);
+  background: linear-gradient(135deg, #1e1a12 0%, var(--card) 100%);
+}
+
+.tip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tip-star {
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 12.5px;
+  color: #d1d5db;
+  line-height: 1.55;
+}
+
+/* ─── CTA Button ────────────────────────────────────────── */
+.cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 12px 0;
+  width: calc(100% - 24px);
+  padding: 11px 16px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  border-radius: var(--radius);
+  color: white;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(16,185,129,0.25);
+  letter-spacing: -0.01em;
+}
+
+.cta-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 28px rgba(16,185,129,0.35);
+}
+
+.cta-btn:active {
+  transform: translateY(0);
+  opacity: 1;
+  box-shadow: 0 2px 10px rgba(16,185,129,0.2);
+}
+
+/* ─── Colour theming for ring ────────────────────────────── */
+.ring-amber #ring-progress { stroke: var(--amber); }
+.ring-red   #ring-progress { stroke: var(--red);   }
+
+/* ─── Focus ring for accessibility ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ─── Fade-in animation ──────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+body { animation: fadeUp 0.25s ease; }

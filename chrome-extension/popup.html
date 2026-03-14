@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvisibleWatts</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ─── Header ─────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#10b981" stroke="#10b981"
+              stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="header-brand">InvisibleWatts</span>
+    <div class="header-badge">BETA</div>
+  </header>
+
+  <!-- ─── Live Carbon Meter ──────────────────────────────── -->
+  <section class="meter-section">
+    <div class="meter-wrap">
+      <svg class="meter-svg" viewBox="0 0 120 120" width="128" height="128">
+        <!-- Glow filter -->
+        <defs>
+          <filter id="ring-glow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Track ring -->
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#1F1F23" stroke-width="9"/>
+        <!-- Progress ring -->
+        <circle
+          id="ring-progress" cx="60" cy="60" r="50"
+          fill="none" stroke="#10b981" stroke-width="9"
+          stroke-dasharray="314.16" stroke-dashoffset="314.16"
+          stroke-linecap="round"
+          transform="rotate(-90 60 60)"
+          filter="url(#ring-glow)"
+        />
+        <!-- Center value -->
+        <text id="ring-value" x="60" y="54" text-anchor="middle"
+              fill="white" font-size="18" font-weight="700"
+              font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+          0 g
+        </text>
+        <text x="60" y="68" text-anchor="middle"
+              fill="#6b7280" font-size="10"
+              font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+          CO₂ today
+        </text>
+      </svg>
+
+      <div class="trend-badge" id="trend-badge">
+        <span class="trend-dot" id="trend-dot"></span>
+        <span id="trend-label">Tracking...</span>
+      </div>
+    </div>
+
+    <!-- Metric pills -->
+    <div class="metric-row">
+      <div class="metric-pill">
+        <span class="metric-icon energy-icon">⚡</span>
+        <div>
+          <div class="metric-val" id="stat-kwh">0.000</div>
+          <div class="metric-unit">kWh</div>
+        </div>
+      </div>
+      <div class="metric-pill">
+        <span class="metric-icon data-icon">📡</span>
+        <div>
+          <div class="metric-val" id="stat-data">0.0</div>
+          <div class="metric-unit" id="stat-data-unit">MB</div>
+        </div>
+      </div>
+      <div class="metric-pill">
+        <span class="metric-icon time-icon">🕐</span>
+        <div>
+          <div class="metric-val" id="stat-time">0</div>
+          <div class="metric-unit">mins</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Current Website ────────────────────────────────── -->
+  <section class="card site-card" id="site-section">
+    <div class="card-header">
+      <span class="card-label">Current website</span>
+      <span class="category-tag" id="site-category-tag">—</span>
+    </div>
+
+    <div class="site-row">
+      <img class="site-favicon" id="site-favicon"
+           src="" alt="" width="18" height="18" onerror="this.style.display='none'" />
+      <span class="site-name" id="site-name">—</span>
+    </div>
+
+    <div class="site-stats-row">
+      <div class="site-stat">
+        <div class="site-stat-label">CO₂</div>
+        <div class="site-stat-val green" id="site-co2">— g</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="site-stat">
+        <div class="site-stat-label">Energy</div>
+        <div class="site-stat-val blue" id="site-kwh">— kWh</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="site-stat">
+        <div class="site-stat-label">Time</div>
+        <div class="site-stat-val" id="site-time">— min</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── AI Insight ─────────────────────────────────────── -->
+  <section class="card tip-card">
+    <div class="tip-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="tip-star">
+        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"
+              fill="#f59e0b"/>
+      </svg>
+      <span class="card-label">AI Insight</span>
+    </div>
+    <p class="tip-text" id="tip-text">Analysing your browsing session...</p>
+  </section>
+
+  <!-- ─── CTA ───────────────────────────────────────────── -->
+  <button class="cta-btn" id="open-dashboard">
+    <span>View Full Analytics</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
