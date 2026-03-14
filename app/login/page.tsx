@@ -98,9 +98,14 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-gray-400 uppercase tracking-widest">
-                    Password
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-medium text-gray-400 uppercase tracking-widest">
+                      Password
+                    </label>
+                    <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <input
                       name="password"
@@ -122,7 +127,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Error */}
-                {state?.error && (
+                {state && "error" in state && (
                   <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3">
                     <p className="text-sm text-red-400">{state.error}</p>
                   </div>

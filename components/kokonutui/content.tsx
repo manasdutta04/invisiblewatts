@@ -1,6 +1,6 @@
 "use client"
 
-import { Leaf, Clock, Database, Sparkles, FlaskConical, PlugZap, Loader2 } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -28,9 +28,12 @@ interface DeviceHour {
 }
 
 interface ContentProps {
+  userName: string
   totalCo2: number
   totalHours: number
   totalEntries: number
+  analysesCount: number
+  todayEntryCount: number
   co2Sessions: Co2Session[]
   deviceHours: DeviceHour[]
   latestRecs: string[]
@@ -44,6 +47,13 @@ const DEVICE_COLORS: Record<string, string> = {
   phone: "#f59e0b",
   laptop: "#3b82f6",
   tablet: "#8b5cf6",
+}
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return "Good morning"
+  if (h < 17) return "Good afternoon"
+  return "Good evening"
 }
 
 function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payload?: { value: number; fill?: string }[]; label?: string; unit: string }) {
@@ -66,9 +76,12 @@ function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payl
 }
 
 export default function Content({
+  userName,
   totalCo2,
   totalHours,
   totalEntries,
+  analysesCount,
+  todayEntryCount,
   co2Sessions,
   deviceHours,
   latestRecs,
@@ -103,15 +116,37 @@ export default function Content({
     }
   }
 
-  const avgCo2 = co2Sessions.length
-    ? Math.round(co2Sessions.reduce((s, d) => s + d.co2, 0) / co2Sessions.length)
-    : 0
+  // Derived metric values
+  const latestCo2 = co2Sessions.at(-1)?.co2 ?? 0
+  const prevCo2 = co2Sessions.at(-2)?.co2 ?? null
+  const co2TrendPct = prevCo2 ? Math.round((latestCo2 - prevCo2) / prevCo2 * 100) : null
+  const avgCo2 = analysesCount > 0 ? Math.round(totalCo2 / analysesCount) : 0
+  const topDevice = deviceHours.slice().sort((a, b) => b.hours - a.hours)[0] ?? null
+
+  const fmtCo2 = (g: number) => g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${g} g`
+
   const avgHours = deviceHours.length
     ? parseFloat((deviceHours.reduce((s, d) => s + d.hours, 0) / deviceHours.length).toFixed(1))
     : 0
 
+  const greeting = getGreeting()
+  const firstName = userName.split(" ")[0]
+
   return (
     <div className="space-y-6">
+
+      {/* Greeting */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {greeting}, {firstName} 🌱
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          {isDemoMode
+            ? "You're viewing demo data. Upload your screen time to see your real footprint."
+            : "Here's your digital carbon footprint overview."}
+        </p>
+      </div>
+
       {isDemoMode && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm">
           <FlaskConical className="w-4 h-4 flex-shrink-0" />
@@ -167,28 +202,39 @@ export default function Content({
         </div>
       ) : (
         <>
-          {/* Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 4 Metric Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
-              icon={<Leaf className="w-5 h-5" />}
-              label="Total CO₂ Tracked"
-              value={totalCo2 >= 1000 ? `${(totalCo2 / 1000).toFixed(2)} kg` : `${Math.round(totalCo2)} g`}
-              sub="from all AI analyses"
-              color="from-green-500 to-emerald-500"
+              icon={<Zap className="w-4 h-4" />}
+              label="Latest CO₂"
+              value={co2Sessions.length ? fmtCo2(latestCo2) : "—"}
+              sub={
+                co2TrendPct !== null
+                  ? `${co2TrendPct > 0 ? "+" : ""}${co2TrendPct}% vs prev session`
+                  : co2Sessions.length ? "first analysis" : "no analyses yet"
+              }
+              subColor={co2TrendPct === null ? "neutral" : co2TrendPct <= 0 ? "good" : "bad"}
             />
             <MetricCard
-              icon={<Clock className="w-5 h-5" />}
-              label="Total Hours Logged"
-              value={`${totalHours.toFixed(1)} h`}
-              sub="across all devices"
-              color="from-blue-500 to-cyan-500"
+              icon={<Clock className="w-4 h-4" />}
+              label="Today's Entries"
+              value={String(todayEntryCount)}
+              sub={todayEntryCount === 0 ? "none uploaded today" : `${todayEntryCount === 1 ? "entry" : "entries"} uploaded today`}
+              subColor="neutral"
             />
             <MetricCard
-              icon={<Database className="w-5 h-5" />}
-              label="Entries Logged"
-              value={String(totalEntries)}
-              sub="total usage records"
-              color="from-violet-500 to-purple-500"
+              icon={<BarChart2 className="w-4 h-4" />}
+              label="Avg CO₂ / Session"
+              value={analysesCount ? fmtCo2(avgCo2) : "—"}
+              sub={analysesCount ? `across ${analysesCount} ${analysesCount === 1 ? "analysis" : "analyses"}` : "no analyses yet"}
+              subColor="neutral"
+            />
+            <MetricCard
+              icon={<Monitor className="w-4 h-4" />}
+              label="Top Device"
+              value={topDevice ? topDevice.device : "—"}
+              sub={topDevice ? `${topDevice.hours}h logged total` : "no entries yet"}
+              subColor="neutral"
             />
           </div>
 
@@ -250,7 +296,7 @@ export default function Content({
                     )}
                     <Bar dataKey="hours" radius={[8, 8, 0, 0]} name="Hours">
                       {deviceHours.map((entry) => (
-                        <Cell key={entry.device} fill={DEVICE_COLORS[entry.device] ?? "#6b7280"} />
+                        <Cell key={entry.device} fill={DEVICE_COLORS[entry.device.toLowerCase()] ?? "#6b7280"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -296,22 +342,29 @@ function MetricCard({
   label,
   value,
   sub,
-  color,
+  subColor = "neutral",
 }: {
   icon: React.ReactNode
   label: string
   value: string
   sub: string
-  color: string
+  subColor?: "good" | "bad" | "neutral"
 }) {
+  const subCls =
+    subColor === "good"
+      ? "text-emerald-500"
+      : subColor === "bad"
+      ? "text-red-500"
+      : "text-gray-400 dark:text-gray-500"
+
   return (
-    <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-4 border border-gray-200 dark:border-[#1F1F23]">
-      <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${color} text-white mb-3`}>
+    <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23]">
+      <div className="inline-flex p-2 rounded-lg bg-gray-100 dark:bg-[#1F1F23] text-gray-600 dark:text-gray-400 mb-4">
         {icon}
       </div>
-      <div className="text-sm text-gray-600 dark:text-gray-400">{label}</div>
-      <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</div>
-      <div className="text-xs text-gray-500 dark:text-gray-500 mt-2">{sub}</div>
+      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+      <p className={`text-xs mt-2 ${subCls}`}>{sub}</p>
     </div>
   )
 }
