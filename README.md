@@ -15,9 +15,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE.md)
 [![Open in v0](https://img.shields.io/badge/Open%20in-v0-black?logo=vercel&logoColor=white)](https://v0.app/chat/projects/prj_bvkaxpFYEFdavofL2NsqwguCfEMy)
 
-<a href="https://v0.app/chat/api/kiro/clone/manasdutta04/invisible-watts" alt="Open in Kiro">
-  <img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" height="28" />
-</a>
+
 
 </div>
 
@@ -170,3 +168,14 @@ Found a vulnerability? Please **do not** open a public issue. See [SECURITY.md](
 ## License
 
 MIT — see [LICENSE.md](LICENSE.md).
+
+## Creators
+
+<table>
+  <tbody>
+    <tr>
+    <td align="center" valign="top" width="14.28%"><a href="https://github.com/manasdutta04"><img src="https://avatars.githubusercontent.com/u/122201926?v=4?s=100" width="100px;" alt="Manas Dutta"/><br /><sub><b>Manas Dutta</b></sub></a><br /></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/priya369-ps"><img src="https://avatars.githubusercontent.com/u/253213951?v=4?s=100" width="100px;" alt="Priya Kanta"/><br /><sub><b>Priya Kanta</b></sub></a><br /></td>
+    </tr>
+  </tbody>
+</table>
