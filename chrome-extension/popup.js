@@ -30,6 +30,7 @@ const siteTime     = document.getElementById("site-time")
 
 const tipText      = document.getElementById("tip-text")
 const dashBtn      = document.getElementById("open-dashboard")
+const analyticsBtn = document.getElementById("open-analytics")
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -208,5 +209,12 @@ chrome.runtime.sendMessage({ type: "GET_STATS" }, (response) => {
 
 dashBtn.addEventListener("click", () => {
   chrome.tabs.create({ url: DASHBOARD_URL })
+  window.close()
+})
+
+// ─── Analytics button ─────────────────────────────────────────────────────────
+
+analyticsBtn.addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("analytics.html") })
   window.close()
 })

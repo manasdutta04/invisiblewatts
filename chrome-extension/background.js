@@ -172,9 +172,9 @@ async function flushSession() {
   sites[siteKey].mb      += mb
   sites[siteKey].minutes += minutes
 
-  // Prune old daily entries beyond 30 days
+  // Prune old daily entries beyond 7 days
   const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - 30)
+  cutoff.setDate(cutoff.getDate() - 7)
   for (const d of Object.keys(daily)) {
     if (d < cutoff.toISOString().slice(0, 10)) delete daily[d]
   }

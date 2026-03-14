@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E3A5F"/>
+      <stop offset="1" stop-color="#0A1A2E"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="55" y1="8" x2="43" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0F2FE"/>
+      <stop offset="0.45" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100" height="100" rx="22" fill="url(#bg)"/>
+
+  <!-- Subtle inner border -->
+  <rect x="1" y="1" width="98" height="98" rx="21" stroke="white" stroke-opacity="0.06" stroke-width="1.5"/>
+
+  <!-- Glow aura behind bolt -->
+  <ellipse cx="50" cy="49" rx="22" ry="34" fill="#0EA5E9" fill-opacity="0.15"/>
+
+  <!-- Lightning bolt -->
+  <path d="M57 9L24 53H43L35 91L76 47H57L57 9Z" fill="url(#bolt)" filter="url(#glow)"/>
+
+  <!-- Invisible dots — trailing off from bolt -->
+  <circle cx="68" cy="76" r="3.2" fill="#38BDF8" fill-opacity="0.55"/>
+  <circle cx="75" cy="68" r="2.2" fill="#38BDF8" fill-opacity="0.3"/>
+  <circle cx="63" cy="83" r="1.6" fill="#38BDF8" fill-opacity="0.18"/>
+
+  <!-- Green leaf accent — eco signal -->
+  <path d="M28 78 Q38 66 46 73 Q38 82 28 78Z" fill="url(#leaf)" fill-opacity="0.85"/>
+</svg>

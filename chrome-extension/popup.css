@@ -43,15 +43,18 @@ body {
 }
 
 .header-logo {
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 12px rgba(16,185,129,0.4);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  overflow: hidden;
   flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(14,165,233,0.3);
+}
+
+.header-logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .header-brand {
@@ -292,38 +295,59 @@ body {
   line-height: 1.55;
 }
 
-/* ─── CTA Button ────────────────────────────────────────── */
-.cta-btn {
+/* ─── Actions row ───────────────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin: 4px 12px 6px;
+}
+
+.btn-analytics,
+.btn-dashboard {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: 4px 12px 0;
-  width: calc(100% - 24px);
-  padding: 11px 16px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  gap: 6px;
+  padding: 10px 12px;
   border: none;
   border-radius: var(--radius);
-  color: white;
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 4px 20px rgba(16,185,129,0.25);
+  transition: opacity 0.18s, transform 0.12s, box-shadow 0.18s;
   letter-spacing: -0.01em;
 }
 
-.cta-btn:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 28px rgba(16,185,129,0.35);
+.btn-analytics {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
 }
 
-.cta-btn:active {
+.btn-analytics:hover {
+  background: var(--card-hover);
+  border-color: rgba(255,255,255,0.18);
+  color: var(--text);
+}
+
+.btn-dashboard {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 16px rgba(16,185,129,0.22);
+}
+
+.btn-dashboard:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(16,185,129,0.32);
+}
+
+.btn-analytics:active,
+.btn-dashboard:active {
   transform: translateY(0);
   opacity: 1;
-  box-shadow: 0 2px 10px rgba(16,185,129,0.2);
 }
 
 /* ─── Colour theming for ring ────────────────────────────── */

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvisibleWatts — Analytics</title>
+  <link rel="stylesheet" href="analytics.css" />
+</head>
+<body>
+  <div class="page">
+
+    <!-- ─── Header ───────────────────────────────────────── -->
+    <header class="a-header">
+      <div class="a-logo">
+        <img src="icons/logo.svg" width="32" height="32" alt="InvisibleWatts" />
+      </div>
+      <div class="a-title-wrap">
+        <span class="a-brand">InvisibleWatts</span>
+        <span class="a-page-title">7-Day Analytics</span>
+      </div>
+      <button class="a-close" id="go-back" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- ─── Week Totals ───────────────────────────────────── -->
+    <section class="section">
+      <div class="metric-grid" id="week-totals">
+        <div class="metric-card green">
+          <div class="metric-label">CO₂ This Week</div>
+          <div class="metric-value" id="total-co2">—</div>
+          <div class="metric-sub">total emitted</div>
+        </div>
+        <div class="metric-card blue">
+          <div class="metric-label">Data Transferred</div>
+          <div class="metric-value" id="total-data">—</div>
+          <div class="metric-sub" id="total-data-sub">total used</div>
+        </div>
+        <div class="metric-card violet">
+          <div class="metric-label">Screen Time</div>
+          <div class="metric-value" id="total-time">—</div>
+          <div class="metric-sub">total tracked</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CO₂ Week Chart ────────────────────────────────── -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">CO₂ This Week</h2>
+        <span class="section-sub">grams per day — daily limit 500 g</span>
+      </div>
+      <div class="chart-card" id="week-chart">
+        <div class="empty-chart">No data yet. Start browsing to see your footprint.</div>
+      </div>
+    </section>
+
+    <!-- ─── Top Sites ─────────────────────────────────────── -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Top Sites</h2>
+        <span class="section-sub">last 7 days by CO₂</span>
+      </div>
+      <div class="card" id="sites-list">
+        <div class="empty-state">No site data yet.</div>
+      </div>
+    </section>
+
+    <!-- ─── Today Detail ─────────────────────────────────── -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Today's Sites</h2>
+        <span class="section-sub" id="today-date">—</span>
+      </div>
+      <div class="card" id="today-sites">
+        <div class="empty-state">No activity tracked today.</div>
+      </div>
+    </section>
+
+    <!-- ─── CTA ──────────────────────────────────────────── -->
+    <div class="cta-row">
+      <button class="cta-btn" id="open-dashboard">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Open Full Dashboard
+      </button>
+    </div>
+
+  </div>
+
+  <script src="analytics.js"></script>
+</body>
+</html>
