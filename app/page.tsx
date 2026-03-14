@@ -5,6 +5,7 @@ import {
   Zap, BarChart3, Brain, Upload, ShieldCheck, Leaf,
   Chrome, ArrowRight, Check,
 } from "lucide-react"
+import LandingNavbar from "@/components/landing-navbar"
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -249,36 +250,10 @@ export default async function LandingPage() {
     <div className="bg-[#07090F] min-h-screen text-white antialiased overflow-x-hidden">
 
       {/* ── Navbar ─────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#07090F]/85 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.svg" alt="InvisibleWatts" className="w-8 h-8 rounded-lg" />
-            <span className="font-semibold text-white tracking-tight">InvisibleWatts</span>
-          </div>
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-400">
-            <a href="#features"    className="hover:text-white transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
-            <a href="#extension"   className="hover:text-white transition-colors">Extension</a>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 hidden sm:block"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="text-sm font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg transition-all shadow-md shadow-blue-500/20"
-            >
-              Get started free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <LandingNavbar />
 
       {/* ── Hero ───────────────────────────────────────────────────── */}
-      <section className="relative pt-20 pb-28 px-4 sm:px-6 overflow-hidden">
+      <section className="relative pt-28 pb-28 px-4 sm:px-6 overflow-hidden">
         {/* Background orbs */}
         <div className="absolute top-0 left-1/3 w-[700px] h-[500px] rounded-full bg-blue-600/7 blur-[120px] pointer-events-none" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] rounded-full bg-cyan-500/6 blur-[100px] pointer-events-none" />
