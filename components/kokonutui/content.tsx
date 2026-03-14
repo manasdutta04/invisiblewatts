@@ -36,6 +36,8 @@ interface ContentProps {
   latestRecs: string[]
   latestSummary: string | null
   isDemoMode?: boolean
+  hasNewEntries?: boolean
+  unanalyzedCount?: number
 }
 
 const DEVICE_COLORS: Record<string, string> = {
@@ -72,9 +74,11 @@ export default function Content({
   latestRecs,
   latestSummary,
   isDemoMode,
+  hasNewEntries,
+  unanalyzedCount,
 }: ContentProps) {
   const isEmpty = totalEntries === 0 && co2Sessions.length === 0
-  const needsAnalysis = totalEntries > 0 && co2Sessions.length === 0
+  const needsAnalysis = !isDemoMode && ((totalEntries > 0 && co2Sessions.length === 0) || !!hasNewEntries)
   const router = useRouter()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
@@ -119,11 +123,13 @@ export default function Content({
       )}
 
       {/* Needs-analysis nudge */}
-      {!isDemoMode && needsAnalysis && (
+      {needsAnalysis && (
         <div className="flex items-center justify-between gap-4 px-5 py-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
           <div>
             <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
-              {totalEntries} {totalEntries === 1 ? "entry" : "entries"} saved — no CO₂ analysis yet
+              {hasNewEntries && co2Sessions.length > 0
+                ? `${unanalyzedCount} new ${unanalyzedCount === 1 ? "entry" : "entries"} not yet analysed`
+                : `${totalEntries} ${totalEntries === 1 ? "entry" : "entries"} saved — no CO₂ analysis yet`}
             </p>
             <p className="text-xs text-blue-700 dark:text-blue-400 mt-0.5">
               Run an AI analysis to calculate your digital carbon footprint.

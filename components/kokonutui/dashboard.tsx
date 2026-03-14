@@ -51,7 +51,7 @@ export default async function Dashboard() {
       .limit(20),
     supabase
       .from("usage_entries")
-      .select("date, device_type, daily_hours, activity_type")
+      .select("date, device_type, daily_hours, activity_type, created_at")
       .eq("user_id", user?.id ?? ""),
   ])
 
@@ -73,6 +73,12 @@ export default async function Dashboard() {
     hours: Math.round(hours * 10) / 10,
   }))
 
+  const latestAnalysisAt = analyses?.at(-1)?.created_at ?? null
+  const unanalyzedCount = latestAnalysisAt
+    ? (entries ?? []).filter((e) => e.created_at > latestAnalysisAt).length
+    : (entries?.length ?? 0)
+  const hasNewEntries = unanalyzedCount > 0
+
   const latestRecs = (analyses?.at(-1)?.recommendations ?? []) as string[]
   const latestSummary = analyses?.at(-1)?.summary ?? null
 
@@ -86,6 +92,8 @@ export default async function Dashboard() {
         deviceHours={deviceHours}
         latestRecs={latestRecs}
         latestSummary={latestSummary}
+        hasNewEntries={hasNewEntries}
+        unanalyzedCount={unanalyzedCount}
       />
     </Layout>
   )
