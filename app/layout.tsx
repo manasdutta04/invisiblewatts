@@ -5,9 +5,9 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "InvisibleWatts - Energy Monitoring Dashboard",
-  description: "Monitor and analyze your energy consumption in real-time with AI-powered insights",
-    generator: 'v0.app'
+  title: "InvisibleWatts — Digital Carbon Tracker",
+  description: "Track and reduce the hidden CO₂ cost of your digital life. Upload screen time data, get AI-powered insights, and lower your digital carbon footprint.",
+  icons: { icon: "/logo.svg" },
 }
 
 const disableTransitionOnChange = false

@@ -1,6 +1,7 @@
 /**
  * create-icons.js
- * Generates icon16.png, icon48.png, and icon128.png using only Node.js built-ins.
+ * Generates icon16.png, icon48.png, icon128.png matching the InvisibleWatts
+ * webapp logo.svg — dark navy bg, blue lightning bolt, green leaf, trailing dots.
  * Run: node create-icons.js
  */
 
@@ -23,152 +24,165 @@ function crc32(buf) {
 }
 
 function makeChunk(type, data) {
-  const t  = Buffer.from(type, "ascii")
-  const d  = data || Buffer.alloc(0)
+  const t      = Buffer.from(type, "ascii")
+  const d      = data || Buffer.alloc(0)
   const lenBuf = Buffer.alloc(4); lenBuf.writeUInt32BE(d.length)
-  const crcInput = Buffer.concat([t, d])
-  const crcBuf   = Buffer.alloc(4); crcBuf.writeUInt32BE(crc32(crcInput))
+  const crcBuf = Buffer.alloc(4); crcBuf.writeUInt32BE(crc32(Buffer.concat([t, d])))
   return Buffer.concat([lenBuf, t, d, crcBuf])
 }
 
-function encodePNG(width, height, pixels) {
-  // pixels: flat array of [r, g, b] triples, row-major
+function encodePNG(size, pixels) {
   const sig  = Buffer.from([0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A])
   const ihdr = Buffer.alloc(13)
-  ihdr.writeUInt32BE(width,  0)
-  ihdr.writeUInt32BE(height, 4)
-  ihdr[8] = 8  // bit depth
-  ihdr[9] = 2  // RGB
-  const raw = Buffer.alloc(height * (1 + width * 3))
-  for (let y = 0; y < height; y++) {
-    raw[y * (1 + width * 3)] = 0 // filter: None
-    for (let x = 0; x < width; x++) {
-      const src = (y * width + x) * 3
-      const dst = y * (1 + width * 3) + 1 + x * 3
-      raw[dst]   = pixels[src]
-      raw[dst+1] = pixels[src+1]
-      raw[dst+2] = pixels[src+2]
+  ihdr.writeUInt32BE(size, 0)
+  ihdr.writeUInt32BE(size, 4)
+  ihdr[8] = 8; ihdr[9] = 2  // 8-bit RGB
+  const stride = 1 + size * 3
+  const raw    = Buffer.alloc(size * stride)
+  for (let y = 0; y < size; y++) {
+    raw[y * stride] = 0  // filter: None
+    for (let x = 0; x < size; x++) {
+      const src = (y * size + x) * 3
+      const dst = y * stride + 1 + x * 3
+      raw[dst] = pixels[src]; raw[dst+1] = pixels[src+1]; raw[dst+2] = pixels[src+2]
     }
   }
-  const idat = makeChunk("IDAT", zlib.deflateSync(raw, { level: 9 }))
-  return Buffer.concat([sig, makeChunk("IHDR", ihdr), idat, makeChunk("IEND")])
+  return Buffer.concat([sig, makeChunk("IHDR", ihdr),
+    makeChunk("IDAT", zlib.deflateSync(raw, { level: 9 })), makeChunk("IEND")])
 }
 
 // ─── Drawing helpers ──────────────────────────────────────────────────────────
 
-function blendPixel(pixels, width, x, y, r, g, b, alpha) {
-  if (x < 0 || x >= width || y < 0 || y >= Math.floor(pixels.length / (width * 3))) return
-  const i = (y * width + x) * 3
-  pixels[i]   = Math.round(pixels[i]   * (1 - alpha) + r * alpha)
-  pixels[i+1] = Math.round(pixels[i+1] * (1 - alpha) + g * alpha)
-  pixels[i+2] = Math.round(pixels[i+2] * (1 - alpha) + b * alpha)
+function blend(pixels, size, x, y, r, g, b, a) {
+  x = Math.round(x); y = Math.round(y)
+  if (x < 0 || y < 0 || x >= size || y >= size) return
+  const i = (y * size + x) * 3
+  pixels[i]   = Math.round(pixels[i]   * (1-a) + r * a)
+  pixels[i+1] = Math.round(pixels[i+1] * (1-a) + g * a)
+  pixels[i+2] = Math.round(pixels[i+2] * (1-a) + b * a)
 }
 
-/** Polygon scanline fill */
-function fillPolygon(pixels, width, height, verts, r, g, b) {
+/** Rounded-rect fill with vertical gradient between topRgb and botRgb */
+function fillRoundRect(pixels, size, rx, ry, rw, rh, radius, topRgb, botRgb) {
+  for (let y = ry; y < ry + rh; y++) {
+    const t   = rh > 1 ? (y - ry) / (rh - 1) : 0
+    const [r, g, b] = [0,1,2].map(i => Math.round(topRgb[i]*(1-t) + botRgb[i]*t))
+    for (let x = rx; x < rx + rw; x++) {
+      const outside = (
+        (x < rx+radius      && y < ry+radius      && Math.hypot(x-(rx+radius),      y-(ry+radius))      > radius) ||
+        (x > rx+rw-radius-1 && y < ry+radius      && Math.hypot(x-(rx+rw-radius-1), y-(ry+radius))      > radius) ||
+        (x < rx+radius      && y > ry+rh-radius-1 && Math.hypot(x-(rx+radius),      y-(ry+rh-radius-1)) > radius) ||
+        (x > rx+rw-radius-1 && y > ry+rh-radius-1 && Math.hypot(x-(rx+rw-radius-1),y-(ry+rh-radius-1)) > radius)
+      )
+      if (!outside && x>=0 && x<size && y>=0 && y<size) blend(pixels, size, x, y, r, g, b, 1)
+    }
+  }
+}
+
+/** Polygon scanline fill (optionally blended) */
+function fillPolygon(pixels, size, verts, r, g, b, a = 1) {
   const n = verts.length
-  for (let y = 0; y < height; y++) {
+  for (let y = 0; y < size; y++) {
     const xs = []
     for (let i = 0; i < n; i++) {
-      const a = verts[i], bv = verts[(i + 1) % n]
-      if ((a.y <= y && bv.y > y) || (bv.y <= y && a.y > y)) {
-        xs.push(a.x + (y - a.y) / (bv.y - a.y) * (bv.x - a.x))
+      const p = verts[i], q = verts[(i+1) % n]
+      if ((p.y <= y && q.y > y) || (q.y <= y && p.y > y)) {
+        xs.push(p.x + (y - p.y) / (q.y - p.y) * (q.x - p.x))
       }
     }
     xs.sort((a, b) => a - b)
     for (let i = 0; i < xs.length - 1; i += 2) {
-      const x0 = Math.max(0, Math.round(xs[i]))
-      const x1 = Math.min(width - 1, Math.round(xs[i + 1]))
-      for (let x = x0; x <= x1; x++) {
-        const idx = (y * width + x) * 3
-        pixels[idx] = r; pixels[idx+1] = g; pixels[idx+2] = b
+      for (let x = Math.max(0, Math.round(xs[i])); x <= Math.min(size-1, Math.round(xs[i+1])); x++) {
+        blend(pixels, size, x, y, r, g, b, a)
       }
     }
   }
 }
 
-/** Filled rounded rectangle */
-function fillRoundRect(pixels, width, height, rx, ry, rw, rh, radius, r, g, b) {
-  for (let y = ry; y < ry + rh; y++) {
-    for (let x = rx; x < rx + rw; x++) {
-      // Corner check
-      const inCorner = (
-        (x < rx + radius && y < ry + radius && Math.hypot(x - (rx + radius), y - (ry + radius)) > radius) ||
-        (x > rx + rw - radius - 1 && y < ry + radius && Math.hypot(x - (rx + rw - radius - 1), y - (ry + radius)) > radius) ||
-        (x < rx + radius && y > ry + rh - radius - 1 && Math.hypot(x - (rx + radius), y - (ry + rh - radius - 1)) > radius) ||
-        (x > rx + rw - radius - 1 && y > ry + rh - radius - 1 && Math.hypot(x - (rx + rw - radius - 1), y - (ry + rh - radius - 1)) > radius)
-      )
-      if (!inCorner && x >= 0 && x < width && y >= 0 && y < height) {
-        const idx = (y * width + x) * 3
-        pixels[idx] = r; pixels[idx+1] = g; pixels[idx+2] = b
-      }
-    }
-  }
+/** Filled circle (optionally blended) */
+function fillCircle(pixels, size, cx, cy, radius, r, g, b, a = 1) {
+  const x0 = Math.max(0, Math.floor(cx - radius))
+  const x1 = Math.min(size-1, Math.ceil(cx + radius))
+  const y0 = Math.max(0, Math.floor(cy - radius))
+  const y1 = Math.min(size-1, Math.ceil(cy + radius))
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++)
+      if (Math.hypot(x-cx, y-cy) <= radius) blend(pixels, size, x, y, r, g, b, a)
 }
 
-// ─── Icon rendering ───────────────────────────────────────────────────────────
+// ─── Icon renderer ────────────────────────────────────────────────────────────
+// Mirrors logo.svg (viewBox 0 0 100 100).  S = size/100 scales every coord.
 
-/**
- * Renders the InvisibleWatts icon at a given size.
- * Design: dark rounded-square bg + green gradient fill + white lightning bolt
- */
 function renderIcon(size) {
-  const pixels = new Uint8Array(size * size * 3)
-  // Fill with true-black base
-  pixels.fill(0)
+  const pixels = new Uint8Array(size * size * 3).fill(0)
+  const S = size / 100
+  const pad = Math.round(0.06 * size)
+  const rw  = size - pad * 2
+  const rad = Math.round(0.22 * size)
 
-  const r  = Math.round(size * 0.22) // corner radius for background square
-  const pad = Math.round(size * 0.06)
+  // ── 1. Background: navy gradient #1E3A5F → #0A1A2E ───────────────────────
+  fillRoundRect(pixels, size, pad, pad, rw, rw, rad,
+    [30, 58, 95],   // #1E3A5F
+    [10, 26, 46])   // #0A1A2E
 
-  // ── Background: dark rounded square ────────────────────────────────────────
-  fillRoundRect(pixels, size, size, pad, pad, size - pad * 2, size - pad * 2, r,
-    15, 15, 18)  // #0F0F12
-
-  // ── Subtle green inner glow (concentric smaller rounded square) ────────────
-  const innerPad = Math.round(size * 0.06)
-  const glowR = r * 0.7
-  for (let gy = pad + innerPad; gy < size - pad - innerPad; gy++) {
-    for (let gx = pad + innerPad; gx < size - pad - innerPad; gx++) {
-      // gentle green tint
-      const idx = (gy * size + gx) * 3
-      pixels[idx]   = 20
-      pixels[idx+1] = 28
-      pixels[idx+2] = 24
-    }
+  // ── 2. Soft glow ellipse (cx=50,cy=49 rx=22,ry=34) #0EA5E9 @ 0.15 ────────
+  if (size >= 32) {
+    const gcx = 50*S, gcy = 49*S, grx = 22*S, gry = 34*S
+    for (let y = Math.floor(gcy-gry); y <= Math.ceil(gcy+gry); y++)
+      for (let x = Math.floor(gcx-grx); x <= Math.ceil(gcx+grx); x++)
+        if (((x-gcx)/grx)**2 + ((y-gcy)/gry)**2 <= 1)
+          blend(pixels, size, x, y, 14, 165, 233, 0.15)
   }
 
-  // ── Lightning bolt (scaled from the SVG path "M13 2L3 14h9l-1 8 10-12h-9l1-8z")
-  // SVG viewBox is 0 0 24 24 → normalise to 0-1 range
-  const boltVerts24 = [
-    { x: 13, y: 2 },
-    { x: 3,  y: 14 },
-    { x: 12, y: 14 },
-    { x: 11, y: 22 },
-    { x: 21, y: 10 },
-    { x: 12, y: 10 },
+  // ── 3. Lightning bolt: M57 9 L24 53 H43 L35 91 L76 47 H57 Z ─────────────
+  //    Vertices in logo.svg 100×100 coordinate space
+  const boltPts = [
+    { x:57, y:9  },
+    { x:24, y:53 },
+    { x:43, y:53 },
+    { x:35, y:91 },
+    { x:76, y:47 },
+    { x:57, y:47 },
   ]
-  // Scale to icon size with padding
-  const boltPad  = size * 0.15
-  const boltScale = (size - boltPad * 2) / 24
-  const boltVerts = boltVerts24.map(v => ({
-    x: boltPad + v.x * boltScale,
-    y: boltPad + v.y * boltScale,
-  }))
-  fillPolygon(pixels, size, size, boltVerts, 16, 185, 129)  // #10b981
+  const bolt = boltPts.map(v => ({ x: v.x*S, y: v.y*S }))
 
-  // ── Highlight: lighter green on top half of bolt ───────────────────────────
-  const highlightVerts = boltVerts24.slice(0, 3).map(v => ({
-    x: boltPad + v.x * boltScale,
-    y: boltPad + v.y * boltScale,
-  }))
-  if (size >= 48) {
-    fillPolygon(pixels, size, size, highlightVerts, 52, 211, 153)  // #34d399
+  // Bolt body: sky blue #38BDF8
+  fillPolygon(pixels, size, bolt, 56, 189, 248)
+
+  // Top-half highlight: lighten with #E0F2FE (224,242,254) @ 30%
+  if (size >= 32) {
+    const topHalf = [
+      { x:57*S, y:9*S  },
+      { x:24*S, y:53*S },
+      { x:43*S, y:53*S },
+      { x:57*S, y:47*S },
+    ]
+    fillPolygon(pixels, size, topHalf, 224, 242, 254, 0.30)
   }
 
-  return encodePNG(size, size, pixels)
+  // ── 4. Trailing dots (only at ≥48px) ─────────────────────────────────────
+  if (size >= 48) {
+    fillCircle(pixels, size, 68*S, 76*S, 3.2*S, 56, 189, 248, 0.55)
+    fillCircle(pixels, size, 75*S, 68*S, 2.2*S, 56, 189, 248, 0.30)
+    fillCircle(pixels, size, 63*S, 83*S, 1.6*S, 56, 189, 248, 0.18)
+  }
+
+  // ── 5. Green leaf (≥32px): M28 78 Q38 66 46 73 Q38 82 28 78Z ─────────────
+  //    Approximated with sampled quadratic bezier polygon
+  if (size >= 32) {
+    const leaf = [
+      { x:28, y:78 }, { x:33, y:73 }, { x:38, y:71 },
+      { x:42, y:71 }, { x:46, y:73 }, { x:42, y:77 },
+      { x:38, y:79 }, { x:33, y:79 },
+    ].map(v => ({ x: v.x*S, y: v.y*S }))
+    fillPolygon(pixels, size, leaf, 52, 211, 153, 0.85)  // #34D399
+  }
+
+  return encodePNG(size, pixels)
 }
 
-// ─── Write files ───────────────────────────────────────────────────────────────
+// ─── Write files ──────────────────────────────────────────────────────────────
+
 const outDir = __dirname
 
 for (const size of [16, 48, 128]) {
@@ -176,4 +190,4 @@ for (const size of [16, 48, 128]) {
   fs.writeFileSync(outPath, renderIcon(size))
   console.log(`✓ Written: ${outPath}`)
 }
-console.log("\nDone! Icons created in:", outDir)
+console.log("\nDone! Icons written to:", outDir)
