@@ -1,35 +1,172 @@
-# invisible-watts
+<div align="center">
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+<img src="public/logo.svg" width="72" height="72" alt="InvisibleWatts logo" />
 
-## Built with v0
+# InvisibleWatts
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+**Google Analytics for Digital Carbon** — quantify the hidden CO₂ cost of your digital life.
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_bvkaxpFYEFdavofL2NsqwguCfEMy)
+[![Next.js](https://img.shields.io/badge/Next.js-15.2-black?logo=next.js&logoColor=white)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Groq AI](https://img.shields.io/badge/Groq-Llama_4-f55036?logoColor=white)](https://groq.com)
+[![pnpm](https://img.shields.io/badge/pnpm-v9-f69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE.md)
+[![Open in v0](https://img.shields.io/badge/Open%20in-v0-black?logo=vercel&logoColor=white)](https://v0.app/chat/projects/prj_bvkaxpFYEFdavofL2NsqwguCfEMy)
 
-## Getting Started
+<a href="https://v0.app/chat/api/kiro/clone/manasdutta04/invisible-watts" alt="Open in Kiro">
+  <img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" height="28" />
+</a>
 
-First, run the development server:
+</div>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+---
+
+## What is InvisibleWatts?
+
+Every stream, scroll, and search burns electricity — and that electricity has a carbon cost that nobody talks about. **InvisibleWatts makes it quantifiable.**
+
+Users upload their phone or laptop screen time reports (iOS Screen Time, Android Digital Wellbeing, or Windows activity), or manually enter device usage data. Groq AI extracts the data, calculates CO₂ grams using real emission factors, and generates personalised recommendations to reduce your digital footprint.
+
+> Think of it as a carbon counter that lives in your browser tab and your pocket — passive, accurate, and actionable.
+
+---
+
+## Core Features
+
+| Feature | Description |
+|---|---|
+| **Screenshot Upload** | Drag in an iOS/Android screen time screenshot — Groq's vision model extracts all usage data automatically |
+| **Manual Entry** | Enter device, hours, and activity type row-by-row with an editable table |
+| **AI CO₂ Analysis** | Groq `llama-3.3-70b` calculates per-entry carbon grams using device + activity emission multiples |
+| **Dashboard** | Real-time metrics, hourly usage charts, and weekly bar charts |
+| **Analytics** | Monthly CO₂ trends, category breakdowns, and time-of-use heatmaps |
+| **AI Insights** | Stored AI analysis results with ranked reduction tips |
+| **Reports** | Filterable report cards with client-side `.txt` download |
+| **Chrome Extension** | Passive tab-level CO₂ estimation with 40+ site profiles, runs entirely offline |
+| **Demo Mode** | Cookie-based toggle that overlays hardcoded data on every page — no sign-up required |
+
+---
+
+## How It Works
+
+### Web App Data Pipeline
+
+```mermaid
+flowchart TD
+    A([User]) --> B{Input method}
+
+    B --> C[Upload screenshot\niOS · Android · Windows]
+    B --> D[Manual entry\ndevice · hours · activity]
+
+    C --> E[FileReader API\nbase64 — never leaves browser]
+    E --> F[POST /api/analyze\nmode: image]
+    F --> G[Groq Vision\nmeta-llama/llama-4-scout-17b-16e-instruct]
+    G --> H[Extracted UsageEntries]
+    H --> I{User confirms\nor edits}
+    I --> D
+
+    D --> J[(Supabase\nusage_entries)]
+    J --> K[POST /api/analyze\nmode: analyze]
+    K --> L[Groq Text\nllama-3.3-70b-versatile]
+    L --> M[CO₂ grams\n+ recommendations JSON]
+    M --> N[(Supabase\nai_analysis)]
+
+    J --> P[/dashboard]
+    J --> Q[/analytics]
+    N --> R[/ai-insights]
+    N --> S[/reports]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### CO₂ Emission Factors
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+Base rates (gCO₂/hour):     Activity multipliers:
+  Phone   →  0.4 g            Streaming  × 3.0
+  Laptop  → 10.0 g            Gaming     × 2.0
+  Tablet  →  3.0 g            Calls      × 1.5
+                               Mixed      × 1.2
+                               Browsing   × 1.0
 
-## Learn More
+  Final: CO₂ (g) = base_rate × hours × activity_multiplier
+```
 
-To learn more, take a look at the following resources:
+### Chrome Extension Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+```mermaid
+flowchart LR
+    T[Browser Tabs] --> BG[background.js\nService Worker]
+    CS[content.js] -->|VIDEO_PLAYING| BG
+    BG -->|flush every 30s| ST[(chrome.storage.local\n7-day rolling window)]
+    CS -->|high-impact site| BN[⚠ Carbon Banner]
+    ST --> POP[Popup\nring meter · site stats]
+    ST --> ANA[analytics.html\n7-day charts]
+    POP -->|open tab| DASH[InvisibleWatts\nDashboard]
+```
 
-<a href="https://v0.app/chat/api/kiro/clone/manasdutta04/invisible-watts" alt="Open in Kiro"><img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" /></a>
+### Authentication & Route Protection
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Middleware
+    participant Supabase
+
+    Browser->>Middleware: GET /dashboard
+    Middleware->>Supabase: getUser() via SSR cookie
+    alt Not authenticated
+        Middleware-->>Browser: 302 → /login
+    else Authenticated
+        Middleware-->>Browser: 200 — render page
+    end
+
+    Browser->>Middleware: POST /auth/signup
+    Middleware->>Supabase: signUp(email, password)
+    Supabase-->>Middleware: user + session
+    Supabase-)Supabase: TRIGGER handle_new_user()<br/>seeds profiles · user_preferences · devices
+    Middleware-->>Browser: 302 → /dashboard
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router, Turbopack) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS 3.4 + shadcn/ui (New York, neutral) |
+| Animations | Motion (`motion/react`) |
+| Charts | Recharts 2 |
+| Icons | Lucide React + Tabler Icons |
+| Database + Auth | Supabase (PostgreSQL + Row-Level Security) |
+| AI | Groq API — Llama 4 Scout (vision) · Llama 3.3 70B (text) |
+| Package manager | pnpm |
+| Deployment | Vercel |
+
+---
+
+## Setup & Development
+
+For environment variables, database setup, project structure, and Chrome extension loading — see **[SETUP.md](SETUP.md)**.
+
+---
+
+## Demo Mode
+
+A cookie (`iw_demo_mode=1`) overlays static hardcoded data across every data page, so anyone can explore the full UI without uploading anything. Toggle it from the sidebar's **Demo** button — it turns violet with an "ON" badge when active. Server components check `cookies().get("iw_demo_mode")?.value === "1"` and return data from `lib/demo-data.ts` instead of querying Supabase.
+
+---
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding standards, and the PR process.
+
+## Security
+
+Found a vulnerability? Please **do not** open a public issue. See [SECURITY.md](SECURITY.md) for the responsible disclosure policy.
+
+## License
+
+MIT — see [LICENSE.md](LICENSE.md).
