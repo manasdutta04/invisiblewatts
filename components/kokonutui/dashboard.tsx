@@ -3,7 +3,10 @@ import Layout from "./layout"
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 
-const CO2_BASE: Record<string, number> = { phone: 0.4, laptop: 10, tablet: 3 }
+const CO2_BASE: Record<string, number> = {
+  phone: 0.4, laptop: 10, tablet: 3,
+  desktop: 20, smart_tv: 35, console: 50, smartwatch: 0.05,
+}
 const ACTIVITY_MULT: Record<string, number> = {
   streaming: 3, gaming: 2, social: 2, calls: 1.5,
   browsing: 1, productivity: 0.7, mixed: 1.2,

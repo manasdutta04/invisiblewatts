@@ -17,17 +17,28 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import type { UsageEntryInput } from "@/lib/supabase/types"
 
-const DEVICE_TYPES = ["phone", "laptop", "tablet"] as const
+const DEVICE_TYPES = ["phone", "laptop", "tablet", "desktop", "smart_tv", "console", "smartwatch"] as const
+const DEVICE_LABELS: Record<typeof DEVICE_TYPES[number], string> = {
+  phone: "Phone",
+  laptop: "Laptop",
+  tablet: "Tablet",
+  desktop: "Desktop",
+  smart_tv: "Smart TV",
+  console: "Console",
+  smartwatch: "Smartwatch",
+}
 const ACTIVITY_TYPES = ["streaming", "browsing", "social", "gaming", "calls", "productivity", "mixed"] as const
 
 type DeviceType = typeof DEVICE_TYPES[number]
 type ActivityType = typeof ACTIVITY_TYPES[number]
+type TimeUnit = "hr" | "min"
 
 interface ManualRow {
   id: string
   date: string
   device_type: DeviceType
   daily_hours: string
+  time_unit: TimeUnit
   activity_type: ActivityType
   notes: string
 }
@@ -38,6 +49,7 @@ function newRow(): ManualRow {
     date: new Date().toISOString().slice(0, 10),
     device_type: "phone",
     daily_hours: "",
+    time_unit: "hr",
     activity_type: "mixed",
     notes: "",
   }
@@ -154,13 +166,18 @@ export default function UploadContent({ existingEntryCount }: { existingEntryCou
   function validRows(): UsageEntryInput[] {
     return rows
       .filter((r) => r.date && Number(r.daily_hours) > 0)
-      .map((r) => ({
-        date: r.date,
-        device_type: r.device_type,
-        daily_hours: Number(r.daily_hours),
-        activity_type: r.activity_type,
-        notes: r.notes || undefined,
-      }))
+      .map((r) => {
+        const hours = r.time_unit === "min"
+          ? Math.round((Number(r.daily_hours) / 60) * 10) / 10
+          : Number(r.daily_hours)
+        return {
+          date: r.date,
+          device_type: r.device_type,
+          daily_hours: hours,
+          activity_type: r.activity_type,
+          notes: r.notes || undefined,
+        }
+      })
   }
 
   async function handleSaveOnly() {
@@ -347,10 +364,10 @@ export default function UploadContent({ existingEntryCount }: { existingEntryCou
           </p>
 
           {/* Table header */}
-          <div className="grid grid-cols-[90px_1fr_70px_1fr_28px] gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 px-1">
+          <div className="grid grid-cols-[90px_1fr_108px_1fr_28px] gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 px-1">
             <span>Date</span>
             <span>Device</span>
-            <span>Hours</span>
+            <span>Time</span>
             <span>Activity</span>
             <span />
           </div>
@@ -358,7 +375,7 @@ export default function UploadContent({ existingEntryCount }: { existingEntryCou
           {/* Rows */}
           <div className="space-y-2">
             {rows.map((row) => (
-              <div key={row.id} className="grid grid-cols-[90px_1fr_70px_1fr_28px] gap-1.5 items-center">
+              <div key={row.id} className="grid grid-cols-[90px_1fr_108px_1fr_28px] gap-1.5 items-center">
                 <input
                   type="date"
                   value={row.date}
@@ -371,19 +388,42 @@ export default function UploadContent({ existingEntryCount }: { existingEntryCou
                   className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-[#2B2B30] bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {DEVICE_TYPES.map((d) => (
-                    <option key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+                    <option key={d} value={d}>{DEVICE_LABELS[d]}</option>
                   ))}
                 </select>
-                <input
-                  type="number"
-                  min="0"
-                  max="24"
-                  step="0.5"
-                  placeholder="hrs"
-                  value={row.daily_hours}
-                  onChange={(e) => updateRow(row.id, "daily_hours", e.target.value)}
-                  className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-[#2B2B30] bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {/* Time input with hr/min toggle */}
+                <div className="flex rounded-lg border border-gray-200 dark:border-[#2B2B30] overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                  <input
+                    type="number"
+                    min="0"
+                    max={row.time_unit === "hr" ? "24" : "1440"}
+                    step={row.time_unit === "hr" ? "0.5" : "5"}
+                    placeholder={row.time_unit === "hr" ? "h" : "m"}
+                    value={row.daily_hours}
+                    onChange={(e) => updateRow(row.id, "daily_hours", e.target.value)}
+                    className="w-full min-w-0 px-2 py-1.5 text-xs bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none"
+                  />
+                  <div className="flex border-l border-gray-200 dark:border-[#2B2B30] flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updateRow(row.id, "time_unit", "hr")}
+                      className={`px-1.5 text-[10px] font-semibold transition-colors ${
+                        row.time_unit === "hr"
+                          ? "bg-blue-500 text-white"
+                          : "bg-white dark:bg-[#1F1F23] text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                    >hr</button>
+                    <button
+                      type="button"
+                      onClick={() => updateRow(row.id, "time_unit", "min")}
+                      className={`px-1.5 text-[10px] font-semibold transition-colors border-l border-gray-200 dark:border-[#2B2B30] ${
+                        row.time_unit === "min"
+                          ? "bg-blue-500 text-white"
+                          : "bg-white dark:bg-[#1F1F23] text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                    >min</button>
+                  </div>
+                </div>
                 <select
                   value={row.activity_type}
                   onChange={(e) => updateRow(row.id, "activity_type", e.target.value)}

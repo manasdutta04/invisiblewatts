@@ -5,7 +5,10 @@ import type { UsageEntryInput } from "@/lib/supabase/types"
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 // CO₂ factors per hour (grams)
-const CO2_BASE: Record<string, number> = { phone: 0.4, laptop: 10, tablet: 3 }
+const CO2_BASE: Record<string, number> = {
+  phone: 0.4, laptop: 10, tablet: 3,
+  desktop: 20, smart_tv: 35, console: 50, smartwatch: 0.05,
+}
 const ACTIVITY_MULT: Record<string, number> = {
   streaming: 3,
   gaming: 2,
@@ -115,7 +118,7 @@ WINDOWS POWER & BATTERY RULES:
 GENERAL RULES:
 - TODAY is ${new Date().toISOString().slice(0, 10)} — use this EXACT date if no date is shown, or if the screenshot shows a day/month without a year (DO NOT use 2024 or any past year)
 - If a date is shown with day + month only (e.g. "12 March"), use the current year: ${new Date().getFullYear()}
-- Infer device: iOS/Android UI → "phone", Windows/macOS settings → "laptop", iPad → "tablet"
+- Infer device: iOS/Android UI → "phone", Windows/macOS settings → "laptop", iPad → "tablet", desktop PC/tower → "desktop", TV app/Smart TV → "smart_tv", PlayStation/Xbox/Nintendo → "console", wearable/watch → "smartwatch"
 - ALWAYS return at least one entry if ANY usage data is visible
 - daily_hours minimum is 0.5 per entry
 
@@ -124,7 +127,7 @@ Return ONLY this JSON (no markdown, no explanation):
   "entries": [
     {
       "date": "YYYY-MM-DD",
-      "device_type": "phone" | "laptop" | "tablet",
+      "device_type": "phone" | "laptop" | "tablet" | "desktop" | "smart_tv" | "console" | "smartwatch",
       "daily_hours": <number, 1 decimal, min 0.5>,
       "activity_type": "streaming" | "browsing" | "gaming" | "calls" | "social" | "productivity" | "mixed"
     }
@@ -180,6 +183,10 @@ Return ONLY this JSON (no markdown, no explanation):
 - Phone: 0.4 gCO₂/hour (avg 0.5W device + 0.1W network)
 - Laptop: 10 gCO₂/hour (~25W avg + network)
 - Tablet: 3 gCO₂/hour (~5W avg + network)
+- Desktop: 20 gCO₂/hour (~50W avg + network)
+- Smart TV: 35 gCO₂/hour (~80W avg)
+- Console: 50 gCO₂/hour (~120W avg)
+- Smartwatch: 0.05 gCO₂/hour (negligible)
 Activity multipliers (server-side emissions): streaming×3, gaming×2, social×2, calls×1.5, mixed×1.2, browsing×1, productivity×0.7
 Respond ONLY with valid JSON, no markdown.`,
         },
