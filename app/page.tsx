@@ -13,7 +13,7 @@ const features = [
   {
     icon: Brain,
     title: "AI CO₂ Analysis",
-    desc: "Groq AI processes your screen time data and calculates precise carbon grams — per app, per device, per day.",
+    desc: "Advanced AI analysis processes your screen time data and calculates precise carbon grams — per app, per device, per day.",
     accent: "blue",
   },
   {
@@ -57,7 +57,7 @@ const steps = [
   {
     n: "02",
     title: "AI extracts & calculates",
-    desc: "Groq's vision and language models read your data, calculate CO₂ grams, and generate insights.",
+    desc: "Advanced vision and language models read your data, calculate CO₂ grams, and generate personalised insights.",
   },
   {
     n: "03",
@@ -266,7 +266,7 @@ export default async function LandingPage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs text-blue-300 mb-6">
                 <Zap className="w-3 h-3" />
-                Powered by Groq AI · Free to use
+                Powered by Advanced AI Analysis
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold leading-[1.08] tracking-tight mb-5">
                 Make the invisible<br />carbon{" "}

@@ -8,7 +8,7 @@ import { Eye, EyeOff, ShieldCheck, Zap, Brain, BarChart3, Leaf } from "lucide-re
 import { Suspense } from "react"
 
 const features = [
-  { icon: Zap,          label: "Instant CO₂ estimates",  desc: "Groq AI converts screen time into carbon grams in seconds." },
+  { icon: Zap,          label: "Instant CO₂ estimates",  desc: "Advanced AI analysis converts screen time into carbon grams in seconds." },
   { icon: Brain,        label: "AI-powered insights",     desc: "Personalised reduction tips based on your actual usage patterns." },
   { icon: BarChart3,    label: "7-day activity trends",   desc: "See how your digital footprint changes day by day." },
   { icon: Leaf,         label: "Eco-impact reporting",    desc: "Download shareable reports for personal or org-level tracking." },

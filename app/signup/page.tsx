@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Eye, EyeOff, ShieldCheck, Upload, Smartphone, Globe } from "lucide-react"
 
 const features = [
-  { icon: Upload,      label: "Upload & auto-extract",   desc: "Drag in a screenshot — Groq AI reads your screen time instantly." },
+  { icon: Upload,      label: "Upload & auto-extract",   desc: "Drag in a screenshot — Advanced AI analysis reads your screen time instantly." },
   { icon: Smartphone,  label: "Any device, any OS",      desc: "iOS Screen Time, Android Digital Wellbeing, or manual entry." },
   { icon: Globe,       label: "Global carbon factors",   desc: "CO₂ estimates based on real electricity grid emission data." },
   { icon: ShieldCheck, label: "Private by design",       desc: "Images never stored. Only extracted data hits the database." },

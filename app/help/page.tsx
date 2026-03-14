@@ -36,7 +36,7 @@ const helpSections = [
       {
         question: "What do the AI recommendations mean?",
         answer:
-          "After each analysis, Groq AI reviews your usage entries and generates personalised recommendations to reduce your digital carbon footprint — for example switching to audio-only calls, reducing background streaming, or batching downloads to off-peak hours. Each recommendation is saved and visible on the AI Insights and Reports pages.",
+          "After each analysis, advanced AI reviews your usage entries and generates personalised recommendations to reduce your digital carbon footprint — for example switching to audio-only calls, reducing background streaming, or batching downloads to off-peak hours. Each recommendation is saved and visible on the AI Insights and Reports pages.",
       },
       {
         question: "How accurate are the CO₂ estimates?",

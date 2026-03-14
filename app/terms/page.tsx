@@ -36,7 +36,7 @@ export default function TermsPage() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">3. Description of Service</h2>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-3">
             InvisibleWatts allows users to upload screenshots of device screen time reports (iOS Screen Time,
-            Android Digital Wellbeing, Windows) or manually enter device usage data. The Service uses AI (Groq API)
+            Android Digital Wellbeing, Windows) or manually enter device usage data. The Service uses AI (advanced AI analysis)
             to extract usage information from screenshots and to estimate CO₂ emissions from digital activity.
             The Service provides:
           </p>
