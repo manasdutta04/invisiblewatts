@@ -55,26 +55,26 @@ Users upload their phone or laptop screen time reports (iOS Screen Time, Android
 flowchart TD
     A([User]) --> B{Input method}
 
-    B --> C[Upload screenshot\niOS · Android · Windows]
-    B --> D[Manual entry\ndevice · hours · activity]
+    B --> C["Upload screenshot<br/>iOS · Android · Windows"]
+    B --> D["Manual entry<br/>device · hours · activity"]
 
-    C --> E[FileReader API\nbase64 — never leaves browser]
-    E --> F[POST /api/analyze\nmode: image]
-    F --> G[Groq Vision\nmeta-llama/llama-4-scout-17b-16e-instruct]
+    C --> E["FileReader API<br/>base64, never leaves browser"]
+    E --> F["POST /api/analyze<br/>mode: image"]
+    F --> G["Groq Vision<br/>llama-4-scout-17b-16e-instruct"]
     G --> H[Extracted UsageEntries]
-    H --> I{User confirms\nor edits}
+    H --> I{"User confirms<br/>or edits"}
     I --> D
 
-    D --> J[(Supabase\nusage_entries)]
-    J --> K[POST /api/analyze\nmode: analyze]
-    K --> L[Groq Text\nllama-3.3-70b-versatile]
-    L --> M[CO₂ grams\n+ recommendations JSON]
-    M --> N[(Supabase\nai_analysis)]
+    D --> J[("Supabase<br/>usage_entries")]
+    J --> K["POST /api/analyze<br/>mode: analyze"]
+    K --> L["Groq Text<br/>llama-3.3-70b-versatile"]
+    L --> M["CO2 grams + recommendations JSON"]
+    M --> N[("Supabase<br/>ai_analysis")]
 
-    J --> P[/dashboard]
-    J --> Q[/analytics]
-    N --> R[/ai-insights]
-    N --> S[/reports]
+    J --> P["/dashboard"]
+    J --> Q["/analytics"]
+    N --> R["/ai-insights"]
+    N --> S["/reports"]
 ```
 
 ### CO₂ Emission Factors
@@ -94,13 +94,13 @@ Base rates (gCO₂/hour):     Activity multipliers:
 
 ```mermaid
 flowchart LR
-    T[Browser Tabs] --> BG[background.js\nService Worker]
+    T[Browser Tabs] --> BG["background.js<br/>Service Worker"]
     CS[content.js] -->|VIDEO_PLAYING| BG
-    BG -->|flush every 30s| ST[(chrome.storage.local\n7-day rolling window)]
-    CS -->|high-impact site| BN[⚠ Carbon Banner]
-    ST --> POP[Popup\nring meter · site stats]
-    ST --> ANA[analytics.html\n7-day charts]
-    POP -->|open tab| DASH[InvisibleWatts\nDashboard]
+    BG -->|flush every 30s| ST[("chrome.storage.local<br/>7-day rolling window")]
+    CS -->|high-impact site| BN[Carbon Warning Banner]
+    ST --> POP["Popup<br/>ring meter · site stats"]
+    ST --> ANA["analytics.html<br/>7-day charts"]
+    POP -->|open tab| DASH["InvisibleWatts<br/>Dashboard"]
 ```
 
 ### Authentication & Route Protection
