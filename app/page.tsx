@@ -93,7 +93,7 @@ function DashboardMockup() {
           <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
           <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
           <div className="ml-3 flex-1 max-w-[160px] rounded-md bg-white/[0.04] border border-white/[0.06] px-2 py-0.5">
-            <span className="text-[9px] text-gray-600">invisiblewatts.app/dashboard</span>
+            <span className="text-[9px] text-gray-600">invisiblewatts/dashboard</span>
           </div>
         </div>
 

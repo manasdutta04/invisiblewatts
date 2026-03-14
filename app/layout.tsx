@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "InvisibleWatts — Digital Carbon Tracker",
+  title: "InvisibleWatts | Digital Carbon Tracker",
   description: "Track and reduce the hidden CO₂ cost of your digital life. Upload screen time data, get AI-powered insights, and lower your digital carbon footprint.",
   icons: { icon: "/logo.svg" },
 }
