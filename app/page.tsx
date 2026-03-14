@@ -425,14 +425,16 @@ export default async function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/help"
+                <a
+                  href="https://github.com/manasdutta04/invisiblewatts/tree/main/chrome-extension"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 hover:text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all"
                 >
                   <Chrome className="w-4 h-4" />
                   Load in Chrome (developer mode)
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                </a>
               </div>
 
               {/* Extension popup preview */}
