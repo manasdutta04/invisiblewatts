@@ -35,6 +35,8 @@ export async function signUp(
   _prevState: AuthActionState,
   formData: FormData
 ): Promise<AuthActionState> {
+  const fullName = (formData.get("full_name") as string ?? "").trim()
+
   const parsed = authSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -44,12 +46,16 @@ export async function signUp(
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
   })
 
   if (error) return { error: error.message }
+
+  if (data.user && fullName) {
+    await supabase.from("profiles").update({ full_name: fullName }).eq("id", data.user.id)
+  }
 
   redirect("/dashboard")
 }
