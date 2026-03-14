@@ -9,7 +9,7 @@ export default function Profile01({
   name: string
   email: string
 }) {
-  const initials = name ? name.slice(0, 2).toUpperCase() : "IW"
+  const initials = name ? name.slice(0, 1).toUpperCase() : "IW"
 
   return (
     <div className="w-full max-w-sm mx-auto">
@@ -40,7 +40,7 @@ export default function Profile01({
                 <CreditCard className="w-4 h-4" />
                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Subscription</span>
               </div>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">Free Trial</span>
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">Free on Beta</span>
             </Link>
 
             <Link

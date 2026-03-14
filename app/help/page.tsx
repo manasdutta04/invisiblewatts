@@ -9,74 +9,84 @@ const helpSections = [
     title: "Getting Started",
     items: [
       {
-        question: "How do I set up my energy monitoring device?",
+        question: "What is InvisibleWatts?",
         answer:
-          "To set up your energy monitoring device, follow these steps: 1) Connect the device to your home WiFi network, 2) Download the InvisibleWatts app, 3) Create an account and log in, 4) Follow the in-app setup wizard to connect your device. For detailed instructions, visit our setup guide.",
+          "InvisibleWatts is a digital carbon tracker that quantifies the CO₂ emissions from your screen time and device usage. You upload a screenshot of your phone or laptop's screen time report (iOS Screen Time, Android Digital Wellbeing, or Windows) or manually enter your device usage, and our AI calculates the carbon footprint of your digital habits.",
       },
       {
-        question: "What devices are compatible with InvisibleWatts?",
+        question: "How do I get started?",
         answer:
-          "InvisibleWatts supports a wide range of smart home devices including smart meters, HVAC systems, water heaters, and other connected appliances. Check our device compatibility list for a complete list of supported devices.",
+          "Sign up for a free account, then head to the Upload Data page. You can either drag and drop a screenshot of your screen time report or manually add entries by selecting a device, entering daily hours, and choosing an activity type (streaming, browsing, gaming, etc.). Once saved, your dashboard and analytics pages will populate with real data.",
+      },
+      {
+        question: "What screen time formats are supported?",
+        answer:
+          "The AI extraction supports screenshots from iOS Screen Time (Settings → Screen Time), Android Digital Wellbeing (Settings → Digital Wellbeing), and Windows screen time summaries. For best results, use a clear, full-screen capture. If extraction misses something, you can always edit the detected entries before saving.",
       },
     ],
   },
   {
-    title: "Using the Dashboard",
+    title: "Understanding Your Data",
     items: [
       {
-        question: "How do I interpret my energy usage data?",
+        question: "How are CO₂ emissions calculated?",
         answer:
-          "Your dashboard displays real-time and historical energy consumption data. The graphs show usage patterns over time, helping you identify peak usage hours and opportunities to save. Color-coded alerts highlight unusual consumption patterns.",
+          "Emissions are estimated using per-device emission factors (phone: 0.4 gCO₂/hour, laptop: 10 gCO₂/hour, tablet: 3 gCO₂/hour) combined with activity multipliers (streaming ×3, gaming ×2, calls ×1.5, mixed ×1.2, browsing ×1). These are multiplied by your daily hours to produce a gCO₂eq estimate. The AI model then cross-checks and contextualises the result.",
       },
       {
         question: "What do the AI recommendations mean?",
         answer:
-          "Our AI analyzes your energy usage patterns and provides personalized recommendations to reduce consumption and lower your bills. These are based on your specific usage habits and home characteristics.",
+          "After each analysis, Groq AI reviews your usage entries and generates personalised recommendations to reduce your digital carbon footprint — for example switching to audio-only calls, reducing background streaming, or batching downloads to off-peak hours. Each recommendation is saved and visible on the AI Insights and Reports pages.",
       },
       {
-        question: "How can I set energy usage goals?",
+        question: "How accurate are the CO₂ estimates?",
         answer:
-          "Visit the Analytics page to set monthly or yearly energy usage goals. The system will track your progress and notify you when you're on track to meet your targets.",
+          "These are approximations based on global average grid emission factors (~400 gCO₂/kWh) and typical device wattages. Actual emissions vary by region, device model, network type, and data centre efficiency. Think of the numbers as directional indicators rather than precise measurements — they're useful for tracking trends and comparing activities over time.",
+      },
+      {
+        question: "What is Demo Mode?",
+        answer:
+          "Demo Mode overlays pre-loaded sample data on every page so you can explore the full UI without uploading anything. Toggle it on or off using the Demo button at the bottom of the sidebar. When active, an amber banner appears on each page to remind you that you're viewing demo data.",
       },
     ],
   },
   {
-    title: "Troubleshooting",
+    title: "Uploading & Privacy",
     items: [
       {
-        question: "My device won't connect to WiFi. What should I do?",
+        question: "Is my screenshot stored on your servers?",
         answer:
-          "Try these steps: 1) Restart your device, 2) Check that your WiFi signal is strong, 3) Ensure you're entering the correct password, 4) Restart your WiFi router. If issues persist, contact our support team.",
+          "No. Uploaded images are read locally in your browser and converted to base64, then sent directly to the AI extraction API. Only the extracted text data (device type, hours, activity) is saved to the database — the image itself is never stored anywhere.",
       },
       {
-        question: "I'm not seeing any data on my dashboard",
+        question: "What happens if the AI extracts incorrect data?",
         answer:
-          "This might happen if your device is still syncing. Wait a few minutes and refresh the page. If data still doesn't appear, check that your device is properly connected to your account.",
+          "After extraction, you'll see a table of detected entries before anything is saved. You can edit, remove, or add rows to correct any mistakes. Only when you click 'Save' or 'Analyse with AI' is the data written to your account.",
       },
       {
-        question: "How do I update my InvisibleWatts app?",
+        question: "Can I delete my data?",
         answer:
-          "The app typically updates automatically. You can also manually check for updates in your device's app store (Apple App Store or Google Play Store) by visiting the InvisibleWatts app page.",
+          "Yes. You can delete individual usage entries from the Activity page. Full account deletion (which removes all your data permanently) is available in Settings → Danger Zone. This action cannot be undone.",
       },
     ],
   },
   {
-    title: "Account & Security",
+    title: "Account & Access",
     items: [
       {
         question: "How do I reset my password?",
         answer:
-          "Click on 'Forgot Password' on the login page and enter your email address. We'll send you a link to reset your password. Follow the instructions in the email to create a new password.",
+          "On the login page, click 'Forgot password?' and enter your email address. Supabase will send you a password reset link. Follow the link in the email to set a new password. If you don't receive the email, check your spam folder.",
       },
       {
-        question: "Is my data secure?",
+        question: "Is InvisibleWatts free?",
         answer:
-          "Yes, we use industry-standard encryption and security measures to protect your data. All data is transmitted over secure HTTPS connections and stored in encrypted databases.",
+          "InvisibleWatts is currently in public beta and free to use. All core features — screenshot upload, AI analysis, dashboard, analytics, and reports — are available at no cost during the beta period.",
       },
       {
-        question: "Can I delete my account?",
+        question: "Which browsers and devices are supported?",
         answer:
-          "Yes, you can delete your account from your Settings page. Note that this action is permanent and will remove all your data from our servers.",
+          "The web app works on any modern browser (Chrome, Firefox, Safari, Edge). The Chrome extension is available for Chromium-based browsers (Chrome, Brave, Edge). No mobile app is required — the web app is fully responsive.",
       },
     ],
   },
@@ -89,7 +99,7 @@ export default function HelpPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Help & Support</h1>
         <p className="text-lg text-gray-600 dark:text-gray-400">
-          Find answers to common questions and get support for using InvisibleWatts.
+          Find answers to common questions about tracking your digital carbon footprint.
         </p>
       </div>
 
@@ -120,13 +130,15 @@ export default function HelpPage() {
       <div className="mt-12 p-6 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Still need help?</h3>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Can't find the answer you're looking for? Contact our support team for personalized assistance.
+          Can't find the answer you're looking for? Raise an issue on GitHub and the team will get back to you.
         </p>
         <Link
-          href="mailto:support@invisiblewatts.com"
+          href="https://github.com/manasdutta04/invisiblewatts/issues"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
         >
-          Email Support
+          Raise an Issue
         </Link>
       </div>
       </div>
