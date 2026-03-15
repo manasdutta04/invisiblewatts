@@ -10,7 +10,7 @@
 
 Core value proposition:
 - Users upload screenshots of phone/laptop screen time reports (iOS Screen Time, Android Digital Wellbeing, Windows) OR manually enter their device usage data
-- Groq AI extracts data from screenshots and calculates CO₂ emissions from digital activity
+- Advanced AI analysis extracts data from screenshots and calculates CO₂ emissions from digital activity
 - AI-powered recommendations to reduce digital carbon footprint
 - Reports and analytics built from real uploaded data
 
@@ -28,7 +28,7 @@ The platform sits at the intersection of sustainability and software. Target use
 - Developers and teams wanting to measure the energy cost of their software
 
 The data flow:
-1. User uploads a screen time screenshot OR manually enters device usage (device type, daily hours, activity, date)
+1. User uploads a screen time screenshot OR manually enters device usage (device type, time in hr/min, activity, date)
 2. Groq AI vision model extracts data from screenshot → user confirms entries
 3. Groq text model analyzes entries → calculates CO₂ emissions → saves structured recommendations to DB
 4. Dashboard, Analytics, Reports, and AI Insights pages pull from real DB data
@@ -108,7 +108,7 @@ All routes live under `app/` using the Next.js App Router:
 
 | Route | File | Type | Notes |
 |---|---|---|---|
-| `/` | `app/page.tsx` | Server | Redirects to `/dashboard` |
+| `/` | `app/page.tsx` | Server | Landing page + redirect to `/dashboard` if logged in |
 | `/login` | `app/login/page.tsx` | Client | Standalone (no Layout) |
 | `/signup` | `app/signup/page.tsx` | Client | Standalone (no Layout) |
 | `/dashboard` | `app/dashboard/page.tsx` | Server | → `<Dashboard />` server component |
@@ -132,7 +132,7 @@ invisiblewatts/
 ├── app/
 │   ├── layout.tsx                  # Root layout: Inter font, ThemeProvider, metadata
 │   ├── globals.css                 # Tailwind directives + CSS custom properties
-│   ├── page.tsx                    # Redirect -> /dashboard
+│   ├── page.tsx                    # Landing page; "Load in Chrome" → GitHub releases
 │   ├── api/
 │   │   └── analyze/
 │   │       └── route.ts            # POST: Groq AI — image extraction or CO₂ analysis
@@ -150,6 +150,8 @@ invisiblewatts/
 │   │   └── actions.ts              # updateProfile, updateGoals, updateNotifications
 │   ├── login/
 │   ├── signup/
+│   ├── forgot-password/
+│   ├── reset-password/
 │   ├── help/
 │   └── terms/
 │
@@ -164,8 +166,8 @@ invisiblewatts/
 │   │   ├── analytics-content.tsx   # Analytics client: charts, empty state
 │   │   ├── activity-content.tsx    # Activity log client
 │   │   ├── ai-insights-content.tsx # AI insights client: real ai_analysis data
-│   │   ├── reports-content.tsx     # Reports client: ai_analysis cards + download
-│   │   ├── settings-content.tsx    # Settings client: account, goals, notifications
+│   │   ├── reports-content.tsx     # Reports client: stacked cards + impact colors + download
+│   │   ├── settings-content.tsx    # Settings client: account, goals, password change
 │   │   └── profile-01.tsx          # Profile dropdown panel
 │   ├── notifications-modal.tsx     # Bell notifications dialog
 │   ├── theme-provider.tsx          # next-themes wrapper
@@ -180,14 +182,21 @@ invisiblewatts/
 │   ├── utils.ts                    # cn() = clsx + tailwind-merge
 │   ├── demo-data.ts                # Static demo data constants (all pages)
 │   └── supabase/
-│       ├── client.ts               # createBrowserClient (use client components)
-│       ├── server.ts               # createServerClient (server components/actions)
+│       ├── client.ts               # createBrowserClient — cookieOptions.maxAge = 1yr
+│       ├── server.ts               # createServerClient — cookies maxAge fallback = 1yr
 │       └── types.ts                # TypeScript types for all 10 DB tables
 │
 ├── public/
 │   └── logo.svg                    # App logo SVG (sidebar, login, signup)
 │
-├── middleware.ts                   # Auth guard: unauthenticated → /login
+├── chrome-extension/               # Chrome MV3 extension (separate from Next.js app)
+│   ├── manifest.json               # v1.0.0, permissions: tabs, storage, activeTab, idle
+│   ├── background.js               # Service worker: tab tracking, CO₂/kWh estimation
+│   ├── content.js                  # Video detection + carbon warning banner injection
+│   ├── popup.html/css/js           # Dark UI: SVG ring meter, metric pills, AI tip
+│   └── icons/                      # PNG icons (16, 48, 128) + create-icons.js generator
+│
+├── middleware.ts                   # Auth guard: unauthenticated → /login; session refresh
 ├── supabase/
 │   └── schema.sql                  # Full DB schema + RLS policies + signup trigger
 ├── CLAUDE.md                       # This file
@@ -205,18 +214,20 @@ invisiblewatts/
 
 ### `/dashboard`
 Main overview, server component checks demo cookie.
-- **Real data path**: reads `hourly_readings` + `daily_readings` + `monthly_readings`; shows empty state with link to `/upload` when no data
-- **Demo mode**: uses `DEMO_HOURLY_DATA`, `DEMO_WEEKLY_DATA`, `DEMO_METRICS` from `lib/demo-data.ts`
-- **4 MetricCards**: Current Usage (kW), Today's Total (kWh), Monthly Average (kWh), Peak Hours
-- **LineChart**: Hourly consumption vs. target
-- **BarChart**: Weekly kWh usage (Mon–Sun)
-- **3 InsightCards**: static tips (Peak Hours, Savings, Weather)
+- **Real data path**: reads `usage_entries` + `ai_analysis`; shows CO₂ charts from real entries; empty state with link to `/upload` when no data
+- **Demo mode**: uses static demo data from `lib/demo-data.ts`
+- **Tabs**: Today (per-entry bar chart colored by device) | 7D (smooth area chart, avg ReferenceLine) | All (area chart of all sessions)
+- **Hours by Device**: donut PieChart with device breakdown
+- `CO2_BASE` in `dashboard.tsx`: `{ phone: 0.4, laptop: 10, tablet: 3, desktop: 20, smart_tv: 35, console: 50, smartwatch: 0.05 }` (gCO₂/hr)
 
 ### `/upload`
 Data entry hub. Client component `upload-content.tsx`.
-- **File dropzone**: accepts JPG/PNG/WEBP → reads as base64 → POST `/api/analyze` (image mode) → Groq vision extracts entries → user confirms → saved to `usage_entries`
-- **Manual entry table**: dynamic rows with Date | Device (phone/laptop/tablet) | Hours | Activity (streaming/browsing/gaming/calls/mixed). Add/remove rows.
-- **"Analyze with AI"**: saves entries to `usage_entries` + POST `/api/analyze` (analyze mode) → Groq calculates CO₂ → saves to `ai_analysis` → redirects to `/ai-insights`
+- **File dropzone**: accepts JPG/PNG/WEBP → reads as base64 → POST `/api/analyze` (image mode) → AI extracts entries → user confirms → saved to `usage_entries`
+- **Manual entry table**: dynamic rows with Date | Device | Time (hr/min toggle) | Activity. Add/remove rows.
+  - Device types: `phone`, `laptop`, `tablet`, `desktop`, `smart_tv`, `console`, `smartwatch`
+  - Time column: number input + `hr`/`min` pill toggle — minutes auto-converted to hours on save
+  - Activity types: `streaming`, `browsing`, `social`, `gaming`, `calls`, `productivity`, `mixed`
+- **"Analyze with AI"**: saves entries to `usage_entries` + POST `/api/analyze` (analyze mode) → AI calculates CO₂ → saves to `ai_analysis` → redirects to `/ai-insights`
 - **"Save without AI"**: saves entries to `usage_entries` only
 - Files never leave the browser — only extracted/entered data hits the DB
 
@@ -242,24 +253,29 @@ System event log, server component reads `activity_events` table.
 ### `/reports`
 AI analysis reports, server component reads `ai_analysis` + `usage_entries`.
 - **Empty state** with link to `/upload`
-- **3 stat cards**: Total Reports, Entries Analysed, Total CO₂ tracked
-- **Working filter tabs**: All / This Month / Last Month (client-side)
-- **Report cards**: each AI analysis → date, CO₂ estimate, entry count, summary, top 3 recommendations
-- **Download button**: generates `.txt` report client-side (no storage)
+- **3 stat cards** with icons: Total Reports (blue), Entries Analysed (violet), Total CO₂ (emerald)
+- **Segmented filter tabs**: All | This Month | Last Month
+- **Stacked report cards** (one below one, full width):
+  - Left border color-coded by CO₂ impact: emerald=low (<100g), amber=moderate (100–500g), red=high (>500g)
+  - Header: report number badge, title, impact badge, date + relative time, CO₂ (colored), entries, Export button
+  - Body split: **Summary** (left) | **Recommendations** (right, numbered circles, all shown)
+- **Export button**: generates `.txt` report client-side (no storage)
 
 ### `/settings`
 Account and preferences, server component reads `profiles` + `user_preferences`.
-- Account info (name editable, email read-only)
-- Usage Goals (daily kWh target, monthly budget) — saved via `updateGoals` server action
+- Avatar strip with name initial + gradient background
+- Account info (name editable, email read-only) with per-section save feedback
+- **Password Change**: working — `supabase.auth.updateUser({ password })` client-side, validation (min 6 chars, match)
+- Carbon Goals (daily CO₂ target g/day, screen time hrs/week) with unit labels
 - Notifications (5 toggles) — saved via `updateNotifications` server action
-- Security (Change Password, 2FA — buttons present, no handlers)
+- Your Data: stat cards + Export/Clear buttons (UI only)
 - Danger Zone (Delete Account — no handler)
 
 ### `/help`
 FAQ and support. Static content, 4 collapsible FAQ sections.
 
 ### `/terms`
-Terms of Service. Static content, 10 legal sections.
+Terms of Service. Static content, 10 legal sections. Last updated: March 2026.
 
 ---
 
@@ -280,6 +296,7 @@ Terms of Service. Static content, 10 legal sections.
 - Demo mode: `violet` accent
 - Environmental/eco: `green-500` / `emerald` (CO₂, leaf icons)
 - Alert: red-500 | Success: green-500 | Warning: yellow-500 | Info: blue-500
+- CO₂ impact: emerald=low | amber=moderate | red=high
 
 ### Skeleton Loading Pattern
 ```tsx
@@ -307,6 +324,7 @@ cn("base-class", condition && "conditional-class", "another-class")
 6. **App-specific components** live in `components/kokonutui/`.
 7. **Files never saved to storage** — uploaded images are read as base64 client-side and sent to the API route for AI extraction; only the extracted data is persisted in Supabase.
 8. **Groq API key is server-side only** — never prefix with `NEXT_PUBLIC_`.
+9. **"Groq" / "Groq AI" never shown in UI** — always referred to as "Advanced AI analysis" in user-facing text.
 
 ---
 
@@ -315,17 +333,21 @@ cn("base-class", condition && "conditional-class", "another-class")
 ### Auth
 - **Provider**: Supabase email/password only (no OAuth)
 - **Package**: `@supabase/ssr` + `@supabase/supabase-js`
-- **Session strategy**: Supabase SSR cookies, refreshed by `middleware.ts` on every request
+- **Session strategy**: Supabase SSR cookies with `maxAge: 60 * 60 * 24 * 365` (1 year) — persists across browser close
 - **Route protection**: `middleware.ts` — unauthenticated → `/login`, authenticated on `/login|/signup` → `/dashboard`
-- **Public routes**: `/login`, `/signup`, `/terms`, `/help`
+- **Public routes**: `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/terms`, `/help`
 - **Server actions**: `app/auth/actions.ts` — `signIn`, `signUp`, `signOut`
 - **Disable email confirmation** in Supabase Dashboard → Auth → Providers → Email
+
+### Session Persistence
+`lib/supabase/client.ts` sets `cookieOptions: { maxAge: 60 * 60 * 24 * 365, sameSite: "lax" }` on `createBrowserClient`.
+`middleware.ts` and `lib/supabase/server.ts` both apply `maxAge: options?.maxAge ?? 60 * 60 * 24 * 365` fallback when writing cookies, so sessions survive browser restarts.
 
 ### Supabase Client Utilities
 | File | Used in | Notes |
 |---|---|---|
-| `lib/supabase/client.ts` | `"use client"` components | `createBrowserClient` |
-| `lib/supabase/server.ts` | Server components, server actions, API routes | `createServerClient` + `await cookies()` |
+| `lib/supabase/client.ts` | `"use client"` components | `createBrowserClient` + persistent cookieOptions |
+| `lib/supabase/server.ts` | Server components, server actions, API routes | `createServerClient` + `await cookies()` + maxAge fallback |
 | `lib/supabase/types.ts` | All files | TypeScript types for all 10 tables |
 
 ### Database Schema (10 tables)
@@ -367,9 +389,18 @@ POST endpoint with two modes:
 | `image` | `meta-llama/llama-4-scout-17b-16e-instruct` | `{ imageBase64, mimeType }` | `{ entries: UsageEntryInput[] }` |
 | `analyze` | `llama-3.3-70b-versatile` | `{ entries: UsageEntryInput[] }` | Saves `ai_analysis` row, returns it |
 
-CO₂ emission factors used in prompts:
-- Phone: 0.4 gCO₂/hour | Laptop: 10 gCO₂/hour | Tablet: 3 gCO₂/hour
-- Activity multipliers: streaming×3, gaming×2, calls×1.5, browsing×1, mixed×1.2
+CO₂ emission factors (gCO₂/hour):
+| Device | gCO₂/hr | Notes |
+|---|---|---|
+| phone | 0.4 | avg 0.5W + network |
+| laptop | 10 | ~25W avg + network |
+| tablet | 3 | ~5W avg + network |
+| desktop | 20 | ~50W avg + network |
+| smart_tv | 35 | ~80W avg |
+| console | 50 | ~120W avg (PS/Xbox) |
+| smartwatch | 0.05 | negligible |
+
+Activity multipliers: `streaming×3`, `gaming×2`, `social×2`, `calls×1.5`, `mixed×1.2`, `browsing×1`, `productivity×0.7`
 
 ### Environment Variables
 ```
@@ -380,29 +411,48 @@ GROQ_API_KEY=<from console.groq.com>        # server-side only, never NEXT_PUBLI
 
 ---
 
+## Chrome Extension
+
+Separate Chrome MV3 extension at `chrome-extension/`. Released on GitHub at:
+**https://github.com/manasdutta04/invisiblewatts/releases** (v1.0.0)
+
+- `manifest.json` — permissions: tabs, storage, activeTab, idle
+- `background.js` — service worker: tab tracking, CO₂/kWh/MB estimation per known domain, daily stats in chrome.storage.local
+- `content.js` — detects video playback → sends to background; injects carbon warning banner on high-impact sites (dismissed 1/day)
+- `popup.html/css/js` — premium dark UI: animated SVG ring meter, metric pills, current site stats, AI tip, dashboard button
+- `icons/create-icons.js` — Node.js PNG icon generator (no deps), run `node icons/create-icons.js` to regenerate
+- **Install**: Download zip from releases → unzip → Chrome → `chrome://extensions` → Developer mode → Load unpacked
+- Landing page "Load in Chrome (developer mode)" button links to the releases page
+
+---
+
 ## Roadmap — Known Gaps
 
 ### Done
-- [x] Supabase auth (email/password)
+- [x] Supabase auth (email/password) + forgot/reset password flow
 - [x] 10-table DB schema with RLS
 - [x] All main pages connected to real DB
 - [x] File upload + Groq AI extraction (image → entries)
 - [x] Groq AI CO₂ analysis (entries → recommendations → saved to DB)
 - [x] Demo Mode (cookie-based, sidebar toggle, all pages)
-- [x] Reports with download (client-side .txt generation)
+- [x] Reports redesign: stacked layout, impact color system, numbered recs, Export button
+- [x] Settings redesign: avatar, per-section save, working password change form
 - [x] Empty states on all pages pointing to `/upload`
 - [x] SVG logo
+- [x] Session persistence across browser close (cookie maxAge = 1 year)
+- [x] Upload page: hr/min time toggle + expanded device types (desktop, smart_tv, console, smartwatch)
+- [x] Chrome extension v1.0.0 released on GitHub
+- [x] Groq branding removed from all UI — shown as "Advanced AI analysis"
+- [x] Landing page with Chrome extension download link → GitHub releases
 
 ### Not Yet Built
 - [ ] Dashboard/Analytics real data from `usage_entries` (currently shows demo kWh data or empty state — should show digital usage charts)
 - [ ] `ThemeToggle` implemented but not rendered in TopNav
 - [ ] Sidebar active state not highlighted (`usePathname()` comparison missing in `NavItem`)
 - [ ] Notifications are placeholder (no real push/email system)
-- [ ] Settings Security section (Change Password, 2FA — no handlers)
 - [ ] Settings Danger Zone (Delete Account — no handler)
 - [ ] `@vercel/analytics` installed but `<Analytics />` not rendered
 - [ ] `typescript.ignoreBuildErrors: true` in `next.config.mjs` — fix before production
-- [ ] `images.unoptimized: true` — remove when deploying to Vercel
 - [ ] Regional grid emission factor lookup (currently uses global average)
 - [ ] Multi-device / org-level tracking
 
@@ -415,9 +465,9 @@ GROQ_API_KEY=<from console.groq.com>        # server-side only, never NEXT_PUBLI
 | `Layout` | `@/components/kokonutui/layout` | Page shell (sidebar + topnav + main) |
 | `Sidebar` | `@/components/kokonutui/sidebar` | Left nav + Demo Mode button |
 | `TopNav` | `@/components/kokonutui/top-nav` | Header bar |
-| `UploadContent` | `@/components/kokonutui/upload-content` | File dropzone + manual entry form |
+| `UploadContent` | `@/components/kokonutui/upload-content` | File dropzone + manual entry form (hr/min toggle, 7 device types) |
 | `AiInsightsContent` | `@/components/kokonutui/ai-insights-content` | Real AI analysis display |
-| `ReportsContent` | `@/components/kokonutui/reports-content` | Reports grid + filter + download |
+| `ReportsContent` | `@/components/kokonutui/reports-content` | Stacked report cards + impact colors + filter + export |
 | `Profile01` | `@/components/kokonutui/profile-01` | Avatar dropdown card |
 | `NotificationsModal` | `@/components/notifications-modal` | Bell dialog |
 | `ThemeToggle` | `@/components/theme-toggle` | Light/dark switch (not rendered) |
@@ -451,3 +501,4 @@ pnpm start         # Start production server
 | **AI analysis** | One Groq API run over a set of usage entries; produces summary + CO₂ estimate + recommendations |
 | **Demo mode** | Cookie-based flag that overlays static hardcoded data on all pages |
 | **kWh** | Kilowatt-hour — unit of energy (used in demo data only) |
+| **Impact level** | CO₂ severity: low <100g (emerald), moderate 100–500g (amber), high >500g (red) |
