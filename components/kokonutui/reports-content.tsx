@@ -264,27 +264,29 @@ function ReportCard({ analysis, reportNumber }: { analysis: AiAnalysis; reportNu
       </div>
 
       {/* Body */}
-      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-[#1F1F23]">
+      <div className="space-y-6">
         <div className="px-5 py-4">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Summary</p>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{analysis.summary}</p>
+          <p className="text-sm font-semibold text-white uppercase tracking-wide mb-2">
+            Summary
+          </p>
+          <p className="text-sm text-gray-200 leading-relaxed">{analysis.summary}</p>
         </div>
 
         {recs.length > 0 && (
-          <div className="px-5 py-4">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">
-              {recs.length} Recommendation{recs.length !== 1 ? "s" : ""}
-            </p>
-            <div className="space-y-2.5">
-              {recs.map((rec, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center justify-center mt-0.5">
-                    {i + 1}
-                  </span>
-                  <span className="text-sm text-gray-700 dark:text-gray-300 leading-snug">{rec}</span>
-                </div>
-              ))}
+          <div className="px-5 pb-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-white uppercase tracking-wide">Recommendations</p>
+              <span className="text-xs font-semibold text-white bg-white/10 px-2 py-1 rounded-full">
+                Top 5
+              </span>
             </div>
+            <ul className="list-disc list-inside space-y-2">
+              {recs.slice(0, 5).map((rec, i) => (
+                <li key={i} className="text-sm text-gray-200 leading-relaxed">
+                  {rec.length > 110 ? `${rec.slice(0, 107).trimEnd()}...` : rec}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
