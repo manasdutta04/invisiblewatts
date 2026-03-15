@@ -25,6 +25,12 @@ function formatCo2(grams: number | null) {
   return grams >= 1000 ? `${(grams / 1000).toFixed(2)} kg CO₂` : `${grams.toFixed(0)} g CO₂`
 }
 
+function formatCost(grams: number | null) {
+  if (grams == null) return "—"
+  const inr = (grams / 475) * 7
+  return `₹${inr.toFixed(4)}`
+}
+
 function relativeDate(dateStr: string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
   if (diff === 0) return "Today"
@@ -58,6 +64,7 @@ function downloadReport(analysis: AiAnalysis) {
     `Generated: ${new Date(analysis.created_at).toLocaleString()}`,
     `Entries analysed: ${analysis.entry_count}`,
     `CO₂ estimate: ${formatCo2(analysis.co2_estimate_grams)}`,
+    `Est. energy cost: ${formatCost(analysis.co2_estimate_grams)} (at ₹7/kWh)`,
     "",
     "── Summary ─────────────────────────────",
     analysis.summary,
@@ -236,6 +243,10 @@ function ReportCard({ analysis, reportNumber }: { analysis: AiAnalysis; reportNu
           <div className="text-right">
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wide mb-0.5">CO₂</p>
             <p className={`text-base font-bold ${cfg.co2Color}`}>{formatCo2(analysis.co2_estimate_grams)}</p>
+          </div>
+          <div className="text-right pl-5 border-l border-gray-100 dark:border-[#1F1F23]">
+            <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wide mb-0.5">Est. Cost</p>
+            <p className="text-base font-bold text-amber-600 dark:text-amber-400">{formatCost(analysis.co2_estimate_grams)}</p>
           </div>
           <div className="text-right pl-5 border-l border-gray-100 dark:border-[#1F1F23]">
             <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wide mb-0.5">Entries</p>

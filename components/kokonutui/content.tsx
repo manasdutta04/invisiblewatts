@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -38,6 +38,7 @@ interface TodayEntry {
 interface ContentProps {
   userName: string
   totalCo2: number
+  totalCostRupees: number
   totalHours: number
   totalEntries: number
   analysesCount: number
@@ -88,6 +89,7 @@ function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payl
 export default function Content({
   userName,
   totalCo2,
+  totalCostRupees,
   totalHours,
   totalEntries,
   analysesCount,
@@ -211,8 +213,8 @@ export default function Content({
         </div>
       ) : (
         <>
-          {/* 4 Metric Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 5 Metric Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <MetricCard
               icon={<Zap className="w-4 h-4" />}
               label="Latest CO₂"
@@ -243,6 +245,13 @@ export default function Content({
               label="Top Device"
               value={topDevice ? topDevice.device : "—"}
               sub={topDevice ? `${topDevice.hours}h logged total` : "no entries yet"}
+              subColor="neutral"
+            />
+            <MetricCard
+              icon={<IndianRupee className="w-4 h-4" />}
+              label="Est. Energy Cost"
+              value={totalCostRupees > 0 ? `₹${totalCostRupees.toFixed(2)}` : "—"}
+              sub={totalCostRupees > 0 ? "based on ₹7/kWh tariff" : "no analyses yet"}
               subColor="neutral"
             />
           </div>

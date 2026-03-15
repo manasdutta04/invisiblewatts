@@ -97,6 +97,7 @@ export default function AiInsightsContent({
 
   const latest = analyses[0]
   const totalCo2 = analyses.reduce((s, a) => s + (a.co2_estimate_grams ?? 0), 0)
+  const totalCostInr = (totalCo2 / 475) * 7
 
   return (
     <div className="space-y-6">
@@ -134,6 +135,10 @@ export default function AiInsightsContent({
                 : `${totalCo2.toFixed(0)} g`}{" "}
               CO₂
             </p>
+            <p className="text-sm font-medium text-white/90 mb-2">
+              Est. energy cost: ₹{totalCostInr.toFixed(4)}{" "}
+              <span className="text-white/60 font-normal">(at ₹7/kWh)</span>
+            </p>
             <p className="text-sm text-white/80">{latest.summary}</p>
           </div>
         </div>
@@ -170,6 +175,7 @@ export default function AiInsightsContent({
                   <TableHead>Date</TableHead>
                   <TableHead>Entries</TableHead>
                   <TableHead>CO₂ Estimate</TableHead>
+                  <TableHead>Est. Cost (₹)</TableHead>
                   <TableHead>Summary</TableHead>
                 </TableRow>
               </TableHeader>
@@ -185,6 +191,11 @@ export default function AiInsightsContent({
                         ? a.co2_estimate_grams >= 1000
                           ? `${(a.co2_estimate_grams / 1000).toFixed(2)} kg CO₂`
                           : `${a.co2_estimate_grams.toFixed(0)} g CO₂`
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-amber-600 dark:text-amber-400 font-medium">
+                      {a.co2_estimate_grams != null
+                        ? `₹${((a.co2_estimate_grams / 475) * 7).toFixed(4)}`
                         : "N/A"}
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{a.summary}</TableCell>

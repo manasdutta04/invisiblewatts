@@ -12,6 +12,10 @@ const ACTIVITY_MULT: Record<string, number> = {
   browsing: 1, productivity: 0.7, mixed: 1.2,
 }
 
+// Grid emission factor (gCO₂/kWh) and India average electricity tariff (₹/kWh)
+const GRID_G_PER_KWH = 475
+const INR_PER_KWH = 7
+
 export default async function Dashboard() {
   const cookieStore = await cookies()
   const isDemoMode = cookieStore.get("iw_demo_mode")?.value === "1"
@@ -22,6 +26,7 @@ export default async function Dashboard() {
         <Content
           userName="there"
           totalCo2={3840}
+          totalCostRupees={Math.round((3840 / GRID_G_PER_KWH) * INR_PER_KWH * 100) / 100}
           totalHours={42.5}
           totalEntries={28}
           analysesCount={4}
@@ -87,6 +92,7 @@ export default async function Dashboard() {
   const userName = profile?.full_name ?? user?.email?.split("@")[0] ?? "there"
 
   const totalCo2 = (analyses ?? []).reduce((s, a) => s + (a.co2_estimate_grams ?? 0), 0)
+  const totalCostRupees = Math.round((totalCo2 / GRID_G_PER_KWH) * INR_PER_KWH * 100) / 100
   const totalHours = (entries ?? []).reduce((s, e) => s + Number(e.daily_hours), 0)
   const totalEntries = entries?.length ?? 0
   const analysesCount = analyses?.length ?? 0
@@ -152,6 +158,7 @@ export default async function Dashboard() {
       <Content
         userName={userName}
         totalCo2={totalCo2}
+        totalCostRupees={totalCostRupees}
         totalHours={totalHours}
         totalEntries={totalEntries}
         analysesCount={analysesCount}

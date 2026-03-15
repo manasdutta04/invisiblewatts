@@ -6,6 +6,9 @@ const DASHBOARD_URL = "https://invisiblewatts.vercel.app"
 // Daily CO₂ limit used for the ring's 100% fill (grams)
 const DAILY_LIMIT_G = 500
 
+// India average domestic electricity tariff (₹/kWh)
+const INR_PER_KWH = 7
+
 // Ring circumference: 2 * π * 50
 const CIRCUMFERENCE = 314.16
 
@@ -20,12 +23,14 @@ const statKwh      = document.getElementById("stat-kwh")
 const statData     = document.getElementById("stat-data")
 const statDataUnit = document.getElementById("stat-data-unit")
 const statTime     = document.getElementById("stat-time")
+const statCost     = document.getElementById("stat-cost")
 
 const siteFavicon  = document.getElementById("site-favicon")
 const siteName     = document.getElementById("site-name")
 const siteCatTag   = document.getElementById("site-category-tag")
 const siteCo2      = document.getElementById("site-co2")
 const siteKwh      = document.getElementById("site-kwh")
+const siteCost     = document.getElementById("site-cost")
 const siteTime     = document.getElementById("site-time")
 
 const tipText      = document.getElementById("tip-text")
@@ -130,6 +135,7 @@ function updateSite(stats) {
     siteCatTag.textContent = "—"
     siteCo2.textContent = "—"
     siteKwh.textContent = "—"
+    siteCost.textContent = "—"
     siteTime.textContent = "—"
     siteFavicon.style.display = "none"
     return
@@ -153,6 +159,7 @@ function updateSite(stats) {
   // Stats
   siteCo2.textContent = fmtCo2(stats.co2)
   siteKwh.textContent = `${fmt(stats.kwh, 4)} kWh`
+  siteCost.textContent = stats.kwh != null ? `₹${(stats.kwh * INR_PER_KWH).toFixed(4)}` : "—"
   siteTime.textContent = fmtMinutes(stats.minutes || 0)
 }
 
@@ -189,6 +196,7 @@ function render(data) {
   statKwh.textContent = kwh.toFixed(4)
   statData.textContent = fmtData(mb)
   statTime.textContent = Math.round(min)
+  statCost.textContent = `₹${(kwh * INR_PER_KWH).toFixed(4)}`
 
   updateSite(data?.currentStats)
   updateTip(data?.currentStats)
