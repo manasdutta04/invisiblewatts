@@ -426,7 +426,7 @@ export default async function LandingPage() {
                   ))}
                 </ul>
                 <a
-                  href="https://github.com/manasdutta04/invisiblewatts/tree/main/chrome-extension"
+                  href="https://github.com/manasdutta04/invisiblewatts/releases"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 hover:text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all"
