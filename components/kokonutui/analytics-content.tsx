@@ -28,19 +28,19 @@ interface BreakdownItem {
 }
 
 const DEVICE_COLORS: Record<string, string> = {
-  phone: "#f59e0b",
-  laptop: "#3b82f6",
-  tablet: "#8b5cf6",
+  phone: "#0ea5e9",
+  laptop: "#0ea5e9",
+  tablet: "#0ea5e9",
 }
 
 const ACTIVITY_COLORS: Record<string, string> = {
-  streaming: "#ef4444",
-  gaming: "#f97316",
-  social: "#ec4899",
-  browsing: "#3b82f6",
-  calls: "#10b981",
-  productivity: "#8b5cf6",
-  mixed: "#6b7280",
+  streaming: "#0ea5e9",
+  gaming: "#0ea5e9",
+  social: "#0ea5e9",
+  browsing: "#0ea5e9",
+  calls: "#0ea5e9",
+  productivity: "#0ea5e9",
+  mixed: "#0ea5e9",
 }
 
 function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payload?: { value: number; fill?: string; name?: string }[]; label?: string; unit: string }) {
@@ -226,9 +226,12 @@ export default function AnalyticsContent({
                       />
                     )}
                     <Bar dataKey="hours" radius={[8, 8, 0, 0]}>
-                      {deviceBreakdown.map((entry) => (
-                        <Cell key={entry.device} fill={DEVICE_COLORS[entry.device ?? ""] ?? "#6b7280"} />
-                      ))}
+                      {deviceBreakdown.map((entry) => {
+                        const key = (entry.device ?? "").toLowerCase()
+                        return (
+                          <Cell key={entry.device} fill={DEVICE_COLORS[key] ?? "#0ea5e9"} />
+                        )
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -257,9 +260,12 @@ export default function AnalyticsContent({
                       />
                     )}
                     <Bar dataKey="hours" radius={[8, 8, 0, 0]}>
-                      {activityBreakdown.map((entry) => (
-                        <Cell key={entry.activity} fill={ACTIVITY_COLORS[entry.activity ?? ""] ?? "#6b7280"} />
-                      ))}
+                      {activityBreakdown.map((entry) => {
+                        const key = (entry.activity ?? "").toLowerCase()
+                        return (
+                          <Cell key={entry.activity} fill={ACTIVITY_COLORS[key] ?? "#0ea5e9"} />
+                        )
+                      })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
