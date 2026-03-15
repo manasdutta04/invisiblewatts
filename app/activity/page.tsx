@@ -11,6 +11,16 @@ export default async function ActivityPage() {
   if (isDemoMode) {
     const demoEvents: TimelineEvent[] = [
       {
+        id: "demo-p1",
+        type: "processing",
+        title: "Processing Usage Data",
+        detail: "Analyzing 3 entries from your devices",
+        tag: "In Progress",
+        occurred_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+        device_type: "laptop",
+        event_date: new Date().toISOString().split("T")[0],
+      },
+      {
         id: "demo-a3",
         type: "analysis",
         title: "AI Analysis Complete",
@@ -25,6 +35,19 @@ export default async function ActivityPage() {
         detail: "7 entries for the past week",
         tag: "laptop, phone",
         occurred_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        device_type: "phone",
+        event_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      },
+      {
+        id: "demo-fail1",
+        type: "failed_upload",
+        title: "Upload Failed",
+        detail: "File validation error while processing",
+        tag: "Failed",
+        occurred_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        device_type: "tablet",
+        event_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        error_message: "Invalid file format. Please upload a PNG or JPG screenshot.",
       },
       {
         id: "demo-a2",
@@ -41,6 +64,19 @@ export default async function ActivityPage() {
         detail: "5 entries across 3 devices",
         tag: "laptop, phone, tablet",
         occurred_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        device_type: "laptop",
+        event_date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      },
+      {
+        id: "demo-fail2",
+        type: "failed_process",
+        title: "Processing Failed",
+        detail: "AI analysis encountered an error",
+        tag: "Error",
+        occurred_at: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+        device_type: "phone",
+        event_date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        error_message: "Server timeout. Please try again later.",
       },
       {
         id: "demo-a1",
@@ -57,6 +93,8 @@ export default async function ActivityPage() {
         detail: "8 entries for the past week",
         tag: "laptop, phone",
         occurred_at: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString(),
+        device_type: "phone",
+        event_date: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       },
     ]
     return (
@@ -71,7 +109,7 @@ export default async function ActivityPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: analyses }, { data: recentEntries }] = await Promise.all([
+  const [{ data: analyses }, { data: recentEntries }, { data: uploadEvents }] = await Promise.all([
     supabase
       .from("ai_analysis")
       .select("id, co2_estimate_grams, entry_count, created_at, summary")
@@ -84,10 +122,49 @@ export default async function ActivityPage() {
       .eq("user_id", user?.id ?? "")
       .order("created_at", { ascending: false })
       .limit(50),
+    supabase
+      .from("upload_events")
+      .select("id, created_at, status, event_date, device_type, entry_count, error_message")
+      .eq("user_id", user?.id ?? "")
+      .order("created_at", { ascending: false })
+      .limit(20),
   ])
 
   const events: TimelineEvent[] = []
 
+  // Add upload events
+  for (const ue of uploadEvents ?? []) {
+    if (ue.status === "processing") {
+      events.push({
+        id: `processing-${ue.id}`,
+        type: "processing",
+        title: "Processing Usage Data",
+        detail: ue.entry_count ? `Analyzing ${ue.entry_count} entries` : "Analyzing entries",
+        tag: "In Progress",
+        occurred_at: ue.created_at,
+        device_type: ue.device_type,
+        event_date: ue.event_date,
+      })
+    } else if (ue.status === "failed") {
+      const isProcessingFailure = ue.error_message?.toLowerCase().includes("analysis") ||
+                                   ue.error_message?.toLowerCase().includes("ai")
+      events.push({
+        id: `failed-${ue.id}`,
+        type: isProcessingFailure ? "failed_process" : "failed_upload",
+        title: isProcessingFailure ? "Processing Failed" : "Upload Failed",
+        detail: isProcessingFailure
+          ? "AI analysis encountered an error"
+          : "File validation error while processing",
+        tag: "Failed",
+        occurred_at: ue.created_at,
+        device_type: ue.device_type,
+        event_date: ue.event_date,
+        error_message: ue.error_message,
+      })
+    }
+  }
+
+  // Add analysis events
   for (const a of analyses ?? []) {
     events.push({
       id: `analysis-${a.id}`,
@@ -117,6 +194,8 @@ export default async function ActivityPage() {
       detail: `${info.count} ${info.count === 1 ? "entry" : "entries"} for ${date}`,
       tag: Array.from(info.devices).join(", "),
       occurred_at: info.occurred_at,
+      device_type: Array.from(info.devices)[0],
+      event_date: date,
     })
   }
 

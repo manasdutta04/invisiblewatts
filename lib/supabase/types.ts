@@ -221,3 +221,15 @@ export interface UsageEntryInput {
   activity_type: "streaming" | "browsing" | "gaming" | "calls" | "social" | "productivity" | "mixed"
   notes?: string
 }
+
+export interface UploadEvent {
+  id: string
+  user_id: string
+  created_at: string
+  status: "pending" | "processing" | "completed" | "failed"
+  event_date: string | null
+  device_type: string
+  entry_count: number | null
+  error_message: string | null
+  metadata: Json | null
+}
