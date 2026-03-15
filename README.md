@@ -13,6 +13,7 @@
 [![Groq AI](https://img.shields.io/badge/Groq-Llama_4-f55036?logoColor=white)](https://groq.com)
 [![pnpm](https://img.shields.io/badge/pnpm-v9-f69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE.md)
+[![Extension v1.1.0](https://img.shields.io/badge/Extension-v1.1.0-f97316?logo=googlechrome&logoColor=white)](https://github.com/manasdutta04/invisiblewatts/releases)
 [![Open in v0](https://img.shields.io/badge/Open%20in-v0-black?logo=vercel&logoColor=white)](https://v0.app/chat/projects/prj_bvkaxpFYEFdavofL2NsqwguCfEMy)
 
 
@@ -38,11 +39,12 @@ Users upload their phone or laptop screen time reports (iOS Screen Time, Android
 | **Screenshot Upload** | Drag in an iOS/Android screen time screenshot — Groq's vision model extracts all usage data automatically |
 | **Manual Entry** | Enter device, hours, and activity type row-by-row with an editable table |
 | **AI CO₂ Analysis** | Groq `llama-3.3-70b` calculates per-entry carbon grams using device + activity emission multiples |
-| **Dashboard** | Real-time metrics, hourly usage charts, and weekly bar charts |
+| **Energy Cost (₹)** | Converts CO₂ → kWh → ₹ using India's avg grid factor (475 gCO₂/kWh) and tariff (₹7/kWh) — shown on dashboard, reports, and AI insights |
+| **Dashboard** | Real-time metrics including CO₂, avg per session, top device, and estimated energy cost |
 | **Analytics** | Monthly CO₂ trends, category breakdowns, and time-of-use heatmaps |
-| **AI Insights** | Stored AI analysis results with ranked reduction tips |
-| **Reports** | Filterable report cards with client-side `.txt` download |
-| **Chrome Extension** | Passive tab-level CO₂ estimation with 40+ site profiles, runs entirely offline |
+| **AI Insights** | Stored AI analysis results with ranked reduction tips and per-analysis cost breakdown |
+| **Reports** | Filterable report cards with CO₂ + ₹ cost display and client-side `.txt` download |
+| **Chrome Extension** | Passive tab-level CO₂ and ₹ energy cost estimation with 40+ site profiles — v1.1.0 |
 | **Demo Mode** | Cookie-based toggle that overlays hardcoded data on every page — no sign-up required |
 
 ---
@@ -81,13 +83,19 @@ flowchart TD
 
 ```
 Base rates (gCO₂/hour):     Activity multipliers:
-  Phone   →  0.4 g            Streaming  × 3.0
-  Laptop  → 10.0 g            Gaming     × 2.0
-  Tablet  →  3.0 g            Calls      × 1.5
-                               Mixed      × 1.2
-                               Browsing   × 1.0
+  Phone      →   0.4 g        Streaming  × 3.0
+  Laptop     →  10.0 g        Gaming     × 2.0
+  Tablet     →   3.0 g        Social     × 2.0
+  Desktop    →  20.0 g        Calls      × 1.5
+  Smart TV   →  35.0 g        Mixed      × 1.2
+  Console    →  50.0 g        Browsing   × 1.0
+  Smartwatch →   0.05 g       Productivity × 0.7
 
   Final: CO₂ (g) = base_rate × hours × activity_multiplier
+
+Energy cost conversion (India):
+  kWh  = CO₂ (g) ÷ 475          (global avg grid factor: 475 gCO₂/kWh)
+  ₹    = kWh × 7                 (India avg domestic tariff: ₹7/kWh)
 ```
 
 ### Chrome Extension Architecture
@@ -98,8 +106,8 @@ flowchart LR
     CS[content.js] -->|VIDEO_PLAYING| BG
     BG -->|flush every 30s| ST[("chrome.storage.local<br/>7-day rolling window")]
     CS -->|high-impact site| BN[Carbon Warning Banner]
-    ST --> POP["Popup<br/>ring meter · site stats"]
-    ST --> ANA["analytics.html<br/>7-day charts"]
+    ST --> POP["Popup v1.1.0<br/>ring meter · CO₂ · kWh · ₹ cost"]
+    ST --> ANA["analytics.html<br/>7-day charts · ₹ per site"]
     POP -->|open tab| DASH["InvisibleWatts<br/>Dashboard"]
 ```
 
