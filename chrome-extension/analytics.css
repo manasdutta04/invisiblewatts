@@ -129,7 +129,7 @@ html, body {
 /* ─── Week metric grid ───────────────────────────────────── */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
@@ -175,6 +175,8 @@ html, body {
 .metric-card.green .metric-value { color: #34d399; }
 .metric-card.blue  .metric-value { color: #60a5fa; }
 .metric-card.violet .metric-value { color: #a78bfa; }
+.metric-card.amber::before  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.metric-card.amber  .metric-value { color: #fbbf24; }
 
 .metric-sub {
   font-size: 10px;
@@ -269,6 +271,15 @@ html, body {
   font-weight: 700;
   color: #34d399;
   width: 48px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.site-row-cost {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f59e0b;
+  width: 52px;
   text-align: right;
   flex-shrink: 0;
 }

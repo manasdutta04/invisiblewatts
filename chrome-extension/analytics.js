@@ -2,6 +2,7 @@
 
 const DASHBOARD_URL = "https://invisiblewatts.vercel.app"
 const DAILY_LIMIT_G = 500
+const INR_PER_KWH   = 7
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,12 @@ function fmtMinutes(mins) {
   if (!mins) return "0 m"
   if (mins >= 60) return `${(mins / 60).toFixed(1)} h`
   return `${Math.round(mins)} m`
+}
+
+function fmtCost(rupees) {
+  if (!rupees) return "\u20B90.00"
+  if (rupees >= 1) return `\u20B9${rupees.toFixed(2)}`
+  return `\u20B9${rupees.toFixed(4)}`
 }
 
 function barColor(co2) {
@@ -42,17 +49,19 @@ function getDayRange(n = 7) {
 
 function renderTotals(daily) {
   const days = getDayRange(7)
-  let totalCo2 = 0, totalMb = 0, totalMin = 0
+  let totalCo2 = 0, totalMb = 0, totalMin = 0, totalKwh = 0
   for (const dk of days) {
     const d = daily[dk]
     if (!d) continue
     totalCo2 += d.co2     || 0
     totalMb  += d.mb      || 0
     totalMin += d.minutes || 0
+    totalKwh += d.kwh     || 0
   }
 
   document.getElementById("total-co2").textContent  = fmtCo2(totalCo2)
   document.getElementById("total-time").textContent = fmtMinutes(totalMin)
+  document.getElementById("total-cost").textContent = fmtCost(totalKwh * INR_PER_KWH)
 
   if (totalMb >= 1024) {
     document.getElementById("total-data").textContent     = (totalMb / 1024).toFixed(2)
@@ -172,6 +181,7 @@ function siteRowHtml(site, maxCo2) {
   const pct  = maxCo2 > 0 ? Math.min((site.co2 / maxCo2) * 100, 100) : 0
   const cs   = catStyle(site.category)
   const fill = barColor(site.co2)
+  const cost = fmtCost((site.kwh || 0) * INR_PER_KWH)
 
   return `
     <div class="site-row">
@@ -186,6 +196,7 @@ function siteRowHtml(site, maxCo2) {
         <div class="site-bar-fill" style="width:${pct}%;background:${fill}"></div>
       </div>
       <span class="site-row-co2">${fmtCo2(site.co2)}</span>
+      <span class="site-row-cost">${cost}</span>
       <span class="site-row-time">${fmtMinutes(site.minutes)}</span>
     </div>`
 }

@@ -31,7 +31,12 @@ const helpSections = [
       {
         question: "How are CO₂ emissions calculated?",
         answer:
-          "Emissions are estimated using per-device emission factors (phone: 0.4 gCO₂/hour, laptop: 10 gCO₂/hour, tablet: 3 gCO₂/hour) combined with activity multipliers (streaming ×3, gaming ×2, calls ×1.5, mixed ×1.2, browsing ×1). These are multiplied by your daily hours to produce a gCO₂eq estimate. The AI model then cross-checks and contextualises the result.",
+          "Emissions are estimated using per-device emission factors (phone: 0.4 gCO₂/hr, laptop: 10 gCO₂/hr, tablet: 3 gCO₂/hr, desktop: 20 gCO₂/hr, smart TV: 35 gCO₂/hr, console: 50 gCO₂/hr) combined with activity multipliers (streaming ×3, gaming ×2, calls ×1.5, mixed ×1.2, browsing ×1, productivity ×0.7). These are multiplied by your daily hours to produce a gCO₂eq estimate. The AI model then cross-checks and contextualises the result.",
+      },
+      {
+        question: "What is the Est. Energy Cost (₹)?",
+        answer:
+          "The estimated energy cost converts your CO₂ figure into Indian Rupees using the formula: kWh = CO₂ (g) ÷ 475, then ₹ = kWh × ₹7. The 475 g/kWh figure is the global average grid emission factor, and ₹7/kWh is India's average domestic electricity tariff. This gives you a tangible monetary sense of the electricity consumed by your digital activity. It is an approximation — actual costs vary by state tariff and provider.",
       },
       {
         question: "What do the AI recommendations mean?",

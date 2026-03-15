@@ -37,7 +37,7 @@ const features = [
   {
     icon: Chrome,
     title: "Chrome Extension",
-    desc: "Passive background tracking in your browser. Estimates CO₂ per site visited with no manual input.",
+    desc: "Passive background tracking in your browser. Estimates CO₂ and energy cost in ₹ per site visited — no manual input required.",
     accent: "orange",
   },
   {
@@ -99,11 +99,12 @@ function DashboardMockup() {
 
         <div className="p-4">
           {/* Metric row */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             {[
-              { label: "Weekly CO₂", value: "2.4", unit: "kg", change: "−18% vs last week", good: true, color: "text-emerald-400" },
-              { label: "Today",      value: "38",  unit: "g",  change: "+4g so far",        good: false, color: "text-blue-400" },
+              { label: "Weekly CO₂", value: "2.4", unit: "kg", change: "−18% vs last week", good: true,  color: "text-emerald-400" },
+              { label: "Today",      value: "38",  unit: "g",  change: "+4g so far",        good: false, color: "text-blue-400"   },
               { label: "Screen time",value: "6.2", unit: "h",  change: "daily average",     good: true,  color: "text-violet-400" },
+              { label: "Est. Cost",  value: "₹35", unit: "",   change: "this week",         good: true,  color: "text-amber-400"  },
             ].map(m => (
               <div key={m.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-2.5">
                 <p className="text-[9px] text-gray-500 mb-1">{m.label}</p>
@@ -142,7 +143,7 @@ function DashboardMockup() {
             <Zap className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
             <p className="text-[9px] text-emerald-300/80 leading-relaxed">
               <span className="font-semibold">AI insight:</span> Streaming accounts for 61% of your weekly CO₂.
-              Reducing HD usage by 1h/day could save <span className="font-semibold">28g</span>.
+              Your est. energy cost this week is <span className="font-semibold text-amber-400">₹35.37</span> — cutting HD by 1h/day saves <span className="font-semibold">₹4.80</span>.
             </p>
           </div>
         </div>
@@ -193,10 +194,11 @@ function ExtensionMockup() {
         </div>
         <div className="p-4">
           <p className="text-[9px] text-gray-500 uppercase tracking-wider mb-2">Today's footprint</p>
-          <div className="flex items-end gap-1 mb-4">
+          <div className="flex items-end gap-1 mb-1">
             <span className="text-3xl font-bold text-white">127</span>
             <span className="text-xs text-gray-500 mb-1">g CO₂</span>
           </div>
+          <p className="text-[9px] text-amber-400 font-semibold mb-4">Est. cost: ₹0.0019 today</p>
           {/* Ring meter */}
           <div className="relative w-16 h-16 mx-auto mb-4">
             <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
@@ -417,6 +419,7 @@ export default async function LandingPage() {
                     "40+ built-in site carbon profiles",
                     "7-day local analytics dashboard",
                     "Real-time video detection for streaming",
+                    "Estimated energy cost in ₹ per site",
                     "All data stays on your device",
                   ].map(t => (
                     <li key={t} className="flex items-center gap-2.5 text-sm text-gray-400">
