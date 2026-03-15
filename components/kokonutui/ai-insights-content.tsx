@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { AiAnalysis } from "@/lib/supabase/types"
 
 export default function AiInsightsContent({
@@ -164,35 +165,35 @@ export default function AiInsightsContent({
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
             Analysis History
           </h2>
-          <div className="space-y-3">
-            {analyses.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[#0F0F12] border border-gray-200 dark:border-[#1F1F23]"
-              >
-                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 flex-shrink-0">
-                  <Leaf className="w-4 h-4 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{a.summary}</p>
-                  <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+          <div className="rounded-xl bg-white dark:bg-[#0F0F12] border border-gray-200 dark:border-[#1F1F23] overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Entries</TableHead>
+                  <TableHead>CO₂ Estimate</TableHead>
+                  <TableHead>Summary</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {analyses.map((a) => (
+                  <TableRow key={a.id}>
+                    <TableCell className="font-medium">
                       {new Date(a.created_at).toLocaleDateString()}
-                    </span>
-                    <span>{a.entry_count} {a.entry_count === 1 ? "entry" : "entries"}</span>
-                    {a.co2_estimate_grams != null && (
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        {a.co2_estimate_grams >= 1000
+                    </TableCell>
+                    <TableCell>{a.entry_count} {a.entry_count === 1 ? "entry" : "entries"}</TableCell>
+                    <TableCell className="text-green-600 dark:text-green-400 font-medium">
+                      {a.co2_estimate_grams != null
+                        ? a.co2_estimate_grams >= 1000
                           ? `${(a.co2_estimate_grams / 1000).toFixed(2)} kg CO₂`
-                          : `${a.co2_estimate_grams.toFixed(0)} g CO₂`}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
-              </div>
-            ))}
+                          : `${a.co2_estimate_grams.toFixed(0)} g CO₂`
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">{a.summary}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}
