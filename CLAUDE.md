@@ -190,10 +190,11 @@ invisiblewatts/
 │   └── logo.svg                    # App logo SVG (sidebar, login, signup)
 │
 ├── chrome-extension/               # Chrome MV3 extension (separate from Next.js app)
-│   ├── manifest.json               # v1.0.0, permissions: tabs, storage, activeTab, idle
+│   ├── manifest.json               # v1.1.0, permissions: tabs, storage, activeTab, idle
 │   ├── background.js               # Service worker: tab tracking, CO₂/kWh estimation
 │   ├── content.js                  # Video detection + carbon warning banner injection
-│   ├── popup.html/css/js           # Dark UI: SVG ring meter, metric pills, AI tip
+│   ├── popup.html/css/js           # Dark UI: 2×2 metric grid (kWh · data · time · ₹), site cost
+│   ├── analytics.html/css/js       # 7-day analytics: CO₂ + ₹ energy cost per site + 4 metric cards
 │   └── icons/                      # PNG icons (16, 48, 128) + create-icons.js generator
 │
 ├── middleware.ts                   # Auth guard: unauthenticated → /login; session refresh
@@ -414,10 +415,13 @@ GROQ_API_KEY=<from console.groq.com>        # server-side only, never NEXT_PUBLI
 ## Chrome Extension
 
 Separate Chrome MV3 extension at `chrome-extension/`. Released on GitHub at:
-**https://github.com/manasdutta04/invisiblewatts/releases** (v1.0.0)
+**https://github.com/manasdutta04/invisiblewatts/releases** (v1.1.0)
 
 - `manifest.json` — permissions: tabs, storage, activeTab, idle
 - `background.js` — service worker: tab tracking, CO₂/kWh/MB estimation per known domain, daily stats in chrome.storage.local
+- `content.js` — detects video playback → sends to background; injects carbon warning banner on high-impact sites
+- `popup.html/css/js` — 2×2 metric grid (kWh · data · time · ₹ cost), current site stats with cost, AI tip, ring meter
+- `analytics.html/css/js` — 2×2 weekly metric cards (CO₂ · data · time · ₹ cost), 7-day SVG bar chart, site rows with ₹ cost
 - `content.js` — detects video playback → sends to background; injects carbon warning banner on high-impact sites (dismissed 1/day)
 - `popup.html/css/js` — premium dark UI: animated SVG ring meter, metric pills, current site stats, AI tip, dashboard button
 - `icons/create-icons.js` — Node.js PNG icon generator (no deps), run `node icons/create-icons.js` to regenerate
@@ -444,6 +448,8 @@ Separate Chrome MV3 extension at `chrome-extension/`. Released on GitHub at:
 - [x] Chrome extension v1.0.0 released on GitHub
 - [x] Groq branding removed from all UI — shown as "Advanced AI analysis"
 - [x] Landing page with Chrome extension download link → GitHub releases
+- [x] Energy cost in ₹ — dashboard (5th metric card), reports (per-card stat), AI insights (hero + table column)
+- [x] Chrome extension v1.1.0 — energy cost in ₹ in popup (2×2 grid), analytics (4th metric card + per-site cost column)
 
 ### Not Yet Built
 - [ ] Dashboard/Analytics real data from `usage_entries` (currently shows demo kWh data or empty state — should show digital usage charts)

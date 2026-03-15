@@ -132,11 +132,11 @@ The extension is an independent MV3 package in `/chrome-extension`. It does **no
 
 ```
 chrome-extension/
-├── manifest.json          MV3 — tabs, storage, activeTab, idle permissions
-├── background.js          Service worker: tab tracking, CO₂ estimation, 7-day storage
+├── manifest.json          MV3 — tabs, storage, activeTab, idle permissions (v1.1.0)
+├── background.js          Service worker: tab tracking, CO₂ + kWh estimation, 7-day storage
 ├── content.js             Video detection + high-impact site warning banner
-├── popup.html/css/js      Animated ring meter, site stats, AI tip
-├── analytics.html/css/js  7-day local analytics dashboard
+├── popup.html/css/js      Ring meter, 2×2 metric grid (kWh · data · time · ₹ cost), site stats
+├── analytics.html/css/js  7-day analytics: CO₂ + ₹ energy cost per site and weekly totals
 └── icons/
     ├── create-icons.js    PNG icon generator (Node.js, zero external deps)
     │                      Run: node icons/create-icons.js

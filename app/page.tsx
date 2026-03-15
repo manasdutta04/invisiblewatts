@@ -405,14 +405,14 @@ export default async function LandingPage() {
               <div className="p-8 sm:p-12">
                 <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs text-orange-300 mb-6">
                   <Chrome className="w-3 h-3" />
-                  Chrome Extension — MV3
+                  Chrome Extension — v1.1.0
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
                   Passive tracking.<br />Zero effort.
                 </h2>
                 <p className="text-gray-400 text-sm leading-relaxed mb-6">
                   Install the InvisibleWatts Chrome extension and it runs silently in the
-                  background — estimating CO₂ per site, per minute, with no manual input.
+                  background — estimating CO₂ and energy cost in ₹ per site, per minute, with no manual input.
                 </p>
                 <ul className="space-y-2.5 mb-8">
                   {[
@@ -436,6 +436,7 @@ export default async function LandingPage() {
                 >
                   <Chrome className="w-4 h-4" />
                   Load in Chrome (developer mode)
+                  <span className="ml-1 text-[10px] font-semibold text-orange-400/80 border border-orange-500/30 rounded px-1.5 py-0.5">v1.1.0</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </div>
