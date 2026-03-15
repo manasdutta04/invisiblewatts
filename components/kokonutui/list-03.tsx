@@ -83,7 +83,7 @@ const ITEMS: ListItem[] = [
     subtitle: "Student loan payoff plan",
     icon: CreditCard,
     iconStyle: "debt",
-    date: "Target: Mar 2025",
+    date: "Target: Mar 2026",
     amount: "$25,000",
     status: "in-progress",
     progress: 45,

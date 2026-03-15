@@ -9,7 +9,7 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Terms of Service</h1>
-        <p className="text-gray-600 dark:text-gray-400">Last updated: March 2025 · InvisibleWatts is currently in public beta.</p>
+        <p className="text-gray-600 dark:text-gray-400">Last updated: March 2026 · InvisibleWatts is currently in public beta.</p>
       </div>
 
       <div className="space-y-8 max-w-none dark:text-gray-300">
