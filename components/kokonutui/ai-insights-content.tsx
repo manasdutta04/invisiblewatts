@@ -144,18 +144,16 @@ export default function AiInsightsContent({
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
           Latest Recommendations
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(latest.recommendations as string[]).map((rec, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-[#0F0F12] border border-gray-200 dark:border-[#1F1F23]"
-            >
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold mt-0.5">
-                {i + 1}
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{rec}</p>
-            </div>
-          ))}
+        <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
+          <ul className="list-disc list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {(latest.recommendations as string[])
+              .slice(0, 3)
+              .map((rec, i) => (
+                <li key={i} className="leading-relaxed">
+                  {rec}
+                </li>
+              ))}
+          </ul>
         </div>
       </div>
 
