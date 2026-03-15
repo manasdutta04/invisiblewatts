@@ -214,7 +214,7 @@ export default function Content({
       ) : (
         <>
           {/* 5 Metric Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             <MetricCard
               icon={<Zap className="w-4 h-4" />}
               label="Latest CO₂"
@@ -253,6 +253,7 @@ export default function Content({
               value={totalCostRupees > 0 ? `₹${totalCostRupees.toFixed(2)}` : "—"}
               sub={totalCostRupees > 0 ? "based on ₹7/kWh tariff" : "no analyses yet"}
               subColor="neutral"
+              valueColor="amber"
             />
           </div>
 
@@ -542,12 +543,14 @@ function MetricCard({
   value,
   sub,
   subColor = "neutral",
+  valueColor = "default",
 }: {
   icon: React.ReactNode
   label: string
   value: string
   sub: string
   subColor?: "good" | "bad" | "neutral"
+  valueColor?: "default" | "amber"
 }) {
   const subCls =
     subColor === "good"
@@ -556,13 +559,21 @@ function MetricCard({
       ? "text-red-500"
       : "text-gray-400 dark:text-gray-500"
 
+  const valueCls = valueColor === "amber"
+    ? "text-amber-500 dark:text-amber-400"
+    : "text-gray-900 dark:text-white"
+
   return (
     <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23]">
-      <div className="inline-flex p-2 rounded-lg bg-gray-100 dark:bg-[#1F1F23] text-gray-600 dark:text-gray-400 mb-4">
+      <div className={`inline-flex p-2 rounded-lg mb-4 ${
+        valueColor === "amber"
+          ? "bg-amber-50 dark:bg-amber-900/20 text-amber-500 dark:text-amber-400"
+          : "bg-gray-100 dark:bg-[#1F1F23] text-gray-600 dark:text-gray-400"
+      }`}>
         {icon}
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{label}</p>
-      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+      <p className={`text-2xl font-bold ${valueCls}`}>{value}</p>
       <p className={`text-xs mt-2 ${subCls}`}>{sub}</p>
     </div>
   )

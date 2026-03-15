@@ -130,20 +130,20 @@ body {
 
 /* ─── Metric Pills ──────────────────────────────────────── */
 .metric-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: 100%;
 }
 
 .metric-pill {
-  flex: 1;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 10px 10px 10px 12px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   transition: background 0.2s, border-color 0.2s;
 }
 
@@ -153,13 +153,13 @@ body {
 }
 
 .metric-icon {
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .metric-val {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.2;
@@ -170,6 +170,9 @@ body {
   color: var(--dim);
   margin-top: 1px;
 }
+
+/* Cost pill accent */
+.metric-pill:last-child .metric-val { color: var(--amber); }
 
 /* ─── Cards ─────────────────────────────────────────────── */
 .card {
@@ -248,18 +251,22 @@ body {
   flex: 1;
   padding: 8px 0;
   text-align: center;
+  min-width: 0;
 }
 
 .site-stat-label {
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--dim);
   margin-bottom: 3px;
 }
 
 .site-stat-val {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .site-stat-val.green { color: var(--green); }
