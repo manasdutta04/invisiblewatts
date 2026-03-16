@@ -17,6 +17,8 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import type { UsageEntryInput } from "@/lib/supabase/types"
 
+import ManualTracker from "./manual-tracker"
+
 const DEVICE_TYPES = ["phone", "laptop", "tablet", "desktop", "smart_tv", "console", "smartwatch"] as const
 const DEVICE_LABELS: Record<typeof DEVICE_TYPES[number], string> = {
   phone: "Phone",
@@ -355,132 +357,7 @@ export default function UploadContent({ existingEntryCount }: { existingEntryCou
         </div>
 
         {/* ── Panel B: Manual Entry ── */}
-        <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23] p-6 space-y-4">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Manual Entry
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Enter your device usage directly. Add one row per day per device.
-          </p>
-
-          {/* Table header */}
-          <div className="grid grid-cols-[90px_1fr_108px_1fr_28px] gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 px-1">
-            <span>Date</span>
-            <span>Device</span>
-            <span>Time</span>
-            <span>Activity</span>
-            <span />
-          </div>
-
-          {/* Rows */}
-          <div className="space-y-2">
-            {rows.map((row) => (
-              <div key={row.id} className="grid grid-cols-[90px_1fr_108px_1fr_28px] gap-1.5 items-center">
-                <input
-                  type="date"
-                  value={row.date}
-                  onChange={(e) => updateRow(row.id, "date", e.target.value)}
-                  className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-[#2B2B30] bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <select
-                  value={row.device_type}
-                  onChange={(e) => updateRow(row.id, "device_type", e.target.value)}
-                  className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-[#2B2B30] bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {DEVICE_TYPES.map((d) => (
-                    <option key={d} value={d}>{DEVICE_LABELS[d]}</option>
-                  ))}
-                </select>
-                {/* Time input with hr/min toggle */}
-                <div className="flex rounded-lg border border-gray-200 dark:border-[#2B2B30] overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                  <input
-                    type="number"
-                    min="0"
-                    max={row.time_unit === "hr" ? "24" : "1440"}
-                    step={row.time_unit === "hr" ? "0.5" : "5"}
-                    placeholder={row.time_unit === "hr" ? "h" : "m"}
-                    value={row.daily_hours}
-                    onChange={(e) => updateRow(row.id, "daily_hours", e.target.value)}
-                    className="w-full min-w-0 px-2 py-1.5 text-xs bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none"
-                  />
-                  <div className="flex border-l border-gray-200 dark:border-[#2B2B30] flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => updateRow(row.id, "time_unit", "hr")}
-                      className={`px-1.5 text-[10px] font-semibold transition-colors ${
-                        row.time_unit === "hr"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white dark:bg-[#1F1F23] text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                      }`}
-                    >hr</button>
-                    <button
-                      type="button"
-                      onClick={() => updateRow(row.id, "time_unit", "min")}
-                      className={`px-1.5 text-[10px] font-semibold transition-colors border-l border-gray-200 dark:border-[#2B2B30] ${
-                        row.time_unit === "min"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white dark:bg-[#1F1F23] text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                      }`}
-                    >min</button>
-                  </div>
-                </div>
-                <select
-                  value={row.activity_type}
-                  onChange={(e) => updateRow(row.id, "activity_type", e.target.value)}
-                  className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-[#2B2B30] bg-white dark:bg-[#1F1F23] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {ACTIVITY_TYPES.map((a) => (
-                    <option key={a} value={a} className="capitalize">{a.charAt(0).toUpperCase() + a.slice(1)}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => removeRow(row.id)}
-                  className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Add row */}
-          <button
-            onClick={() => setRows((prev) => [...prev, newRow()])}
-            className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add row
-          </button>
-
-          {/* Actions */}
-          <div className="flex flex-col gap-2 pt-2 border-t border-gray-100 dark:border-[#1F1F23]">
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || isSaving}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-60 text-white text-sm font-semibold transition-all"
-            >
-              {isAnalyzing ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing with AI…</>
-              ) : (
-                <><Sparkles className="w-4 h-4" /> Analyze with AI</>
-              )}
-            </button>
-            <button
-              onClick={handleSaveOnly}
-              disabled={isSaving || isAnalyzing}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-[#2B2B30] hover:bg-gray-50 dark:hover:bg-[#1F1F23] disabled:opacity-60 text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors"
-            >
-              {isSaving ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
-              ) : (
-                <><Save className="w-4 h-4" /> Save without AI</>
-              )}
-            </button>
-          </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
-            Files never leave your browser. Only extracted data is saved.
-          </p>
-        </div>
+        <ManualTracker isDemoMode={false} />
       </div>
     </div>
   )

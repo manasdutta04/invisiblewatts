@@ -228,32 +228,59 @@ export default function Content({
               <CarbonInfoTooltip />
             </div>
 
-            {/* ── Digital Footprint row (data-pipeline) ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <MetricCard
-                icon={<Wifi className="w-4 h-4" />}
-                label="Data Used"
-                value={totalDataGB > 0 ? `${totalDataGB} GB` : "—"}
-                sub={totalDataGB > 0 ? "estimated from screen-time entries" : "no entries yet"}
-                subColor="neutral"
-                accent="indigo"
-              />
-              <MetricCard
-                icon={<BatteryCharging className="w-4 h-4" />}
-                label="Energy Used"
-                value={totalEnergyKwh > 0 ? `${totalEnergyKwh} kWh` : "—"}
-                sub={totalEnergyKwh > 0 ? `${totalDataGB} GB × 0.06 kWh/GB` : "no entries yet"}
-                subColor="neutral"
-                accent="cyan"
-              />
-              <MetricCard
-                icon={<Leaf className="w-4 h-4" />}
-                label="Carbon Emitted"
-                value={dataBasedCo2 > 0 ? (dataBasedCo2 >= 1000 ? `${(dataBasedCo2 / 1000).toFixed(2)} kg CO₂` : `${dataBasedCo2} g CO₂`) : "—"}
-                sub={dataBasedCo2 > 0 ? `${totalEnergyKwh} kWh × 475 g/kWh` : "no entries yet"}
-                subColor={dataBasedCo2 > 500 ? "bad" : dataBasedCo2 > 0 ? "good" : "neutral"}
-                accent="emerald"
-              />
+            {/* ── Digital Footprint — single-row table card ── */}
+            <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23] overflow-hidden">
+              <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-[#1F1F23]">
+
+                {/* Data Used */}
+                <div className="flex items-center gap-3 px-5 py-5">
+                  <div className="flex-shrink-0 p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 dark:text-indigo-400">
+                    <Wifi className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Data Used</p>
+                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tabular-nums leading-tight">
+                      {totalDataGB > 0 ? `${totalDataGB} GB` : "—"}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                      {totalDataGB > 0 ? "from screen-time entries" : "no entries yet"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Energy Used */}
+                <div className="flex items-center gap-3 px-5 py-5">
+                  <div className="flex-shrink-0 p-2 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 text-cyan-500 dark:text-cyan-400">
+                    <BatteryCharging className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Energy Used</p>
+                    <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 tabular-nums leading-tight">
+                      {totalEnergyKwh > 0 ? `${totalEnergyKwh} kWh` : "—"}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                      {totalEnergyKwh > 0 ? `${totalDataGB} GB × 0.06 kWh/GB` : "no entries yet"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Carbon Emitted */}
+                <div className="flex items-center gap-3 px-5 py-5">
+                  <div className="flex-shrink-0 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 dark:text-emerald-400">
+                    <Leaf className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Carbon Emitted</p>
+                    <p className={`text-2xl font-bold tabular-nums leading-tight ${dataBasedCo2 > 500 ? "text-red-500" : dataBasedCo2 > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-white"}`}>
+                      {dataBasedCo2 > 0 ? (dataBasedCo2 >= 1000 ? `${(dataBasedCo2 / 1000).toFixed(2)} kg CO₂` : `${dataBasedCo2} g CO₂`) : "—"}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                      {dataBasedCo2 > 0 ? `${totalEnergyKwh} kWh × 475 g/kWh` : "no entries yet"}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
             </div>
 
             {/* ── 5 session-based metric cards ── */}
@@ -719,13 +746,13 @@ function MetricCard({
       : "bg-gray-100 dark:bg-[#1F1F23] text-gray-600 dark:text-gray-400"
 
   return (
-    <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23]">
-      <div className={`inline-flex p-2 rounded-lg mb-4 ${iconCls}`}>
+    <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-4 border border-gray-200 dark:border-[#1F1F23]">
+      <div className={`inline-flex p-1.5 rounded-lg mb-2.5 ${iconCls}`}>
         {icon}
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${valueCls}`}>{value}</p>
-      <p className={`text-xs mt-2 ${subCls}`}>{sub}</p>
+      <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mb-0.5">{label}</p>
+      <p className={`text-xl font-bold ${valueCls}`}>{value}</p>
+      <p className={`text-[10px] mt-1.5 ${subCls}`}>{sub}</p>
     </div>
   )
 }
