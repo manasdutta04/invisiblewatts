@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -52,6 +52,10 @@ interface ContentProps {
   isDemoMode?: boolean
   hasNewEntries?: boolean
   unanalyzedCount?: number
+  // Data-pipeline metrics
+  totalDataGB: number
+  totalEnergyKwh: number
+  dataBasedCo2: number
 }
 
 const DEVICE_COLORS: Record<string, string> = {
@@ -103,6 +107,9 @@ export default function Content({
   isDemoMode,
   hasNewEntries,
   unanalyzedCount,
+  totalDataGB,
+  totalEnergyKwh,
+  dataBasedCo2,
 }: ContentProps) {
   const isEmpty = totalEntries === 0 && co2Sessions.length === 0
   const needsAnalysis = !isDemoMode && ((totalEntries > 0 && co2Sessions.length === 0) || !!hasNewEntries)
@@ -213,13 +220,43 @@ export default function Content({
         </div>
       ) : (
         <>
-          {/* 5 Metric Cards */}
-          <div>
+          {/* Metric Cards section */}
+          <div className="space-y-4">
             {/* Section label row with info button */}
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Metrics</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Overview</span>
               <CarbonInfoTooltip />
             </div>
+
+            {/* ── Digital Footprint row (data-pipeline) ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <MetricCard
+                icon={<Wifi className="w-4 h-4" />}
+                label="Data Used"
+                value={totalDataGB > 0 ? `${totalDataGB} GB` : "—"}
+                sub={totalDataGB > 0 ? "estimated from screen-time entries" : "no entries yet"}
+                subColor="neutral"
+                accent="indigo"
+              />
+              <MetricCard
+                icon={<BatteryCharging className="w-4 h-4" />}
+                label="Energy Used"
+                value={totalEnergyKwh > 0 ? `${totalEnergyKwh} kWh` : "—"}
+                sub={totalEnergyKwh > 0 ? `${totalDataGB} GB × 0.06 kWh/GB` : "no entries yet"}
+                subColor="neutral"
+                accent="cyan"
+              />
+              <MetricCard
+                icon={<Leaf className="w-4 h-4" />}
+                label="Carbon Emitted"
+                value={dataBasedCo2 > 0 ? (dataBasedCo2 >= 1000 ? `${(dataBasedCo2 / 1000).toFixed(2)} kg CO₂` : `${dataBasedCo2} g CO₂`) : "—"}
+                sub={dataBasedCo2 > 0 ? `${totalEnergyKwh} kWh × 475 g/kWh` : "no entries yet"}
+                subColor={dataBasedCo2 > 500 ? "bad" : dataBasedCo2 > 0 ? "good" : "neutral"}
+                accent="emerald"
+              />
+            </div>
+
+            {/* ── 5 session-based metric cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <MetricCard
                 icon={<Zap className="w-4 h-4" />}
@@ -261,8 +298,8 @@ export default function Content({
                 subColor="neutral"
                 valueColor="amber"
               />
-            </div>
-          </div>
+            </div> {/* end 5-card grid */}
+          </div> {/* end metric cards section */}
 
           {/* Charts — side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -588,63 +625,46 @@ function CarbonInfoTooltip() {
             <p className="text-sm font-semibold text-gray-900 dark:text-white">How Digital Carbon is Calculated</p>
           </div>
 
-          {/* Formula */}
-          <div className="rounded-lg bg-gray-50 dark:bg-[#1A1A1F] border border-gray-100 dark:border-[#2A2A30] px-3 py-2.5">
-            <p className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 font-semibold">
-              CO₂ (g) = Base × Multiplier × Hours
-            </p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-1">
-              summed per device entry, then converted to kg if ≥ 1000 g
-            </p>
+          {/* Pipeline */}
+          <div className="flex items-center gap-1.5 text-[11px] font-mono">
+            <span className="px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold">GB</span>
+            <span className="text-gray-400">× 0.06</span>
+            <span className="px-2 py-1 rounded-md bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 font-bold">kWh</span>
+            <span className="text-gray-400">× 475</span>
+            <span className="px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold">g CO₂</span>
           </div>
 
-          {/* Device base values */}
+          {/* Data rates */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Device base (g CO₂/hr)</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Data rate per activity (GB/hr)</p>
             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
               {[
-                ["Phone", "0.4"],
-                ["Laptop", "10"],
-                ["Tablet", "3"],
-                ["Desktop", "20"],
-                ["Smart TV", "35"],
-                ["Console", "50"],
-                ["Smartwatch", "0.05"],
-              ].map(([device, val]) => (
-                <div key={device} className="flex justify-between">
-                  <span className="text-[11px] text-gray-500 dark:text-gray-400">{device}</span>
-                  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{val} g</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Activity multipliers */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Activity multiplier</p>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-              {[
-                ["Streaming", "3×"],
-                ["Gaming", "2×"],
-                ["Social", "2×"],
-                ["Calls", "1.5×"],
-                ["Browsing", "1×"],
-                ["Productivity", "0.7×"],
-                ["Mixed", "1.2×"],
+                ["Streaming", "3.0"],
+                ["Calls",      "1.0"],
+                ["Social",    "0.5"],
+                ["Mixed",     "0.5"],
+                ["Gaming",    "0.1"],
+                ["Browsing",  "0.1"],
+                ["Productivity", "0.05"],
               ].map(([act, val]) => (
                 <div key={act} className="flex justify-between">
                   <span className="text-[11px] text-gray-500 dark:text-gray-400">{act}</span>
-                  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{val}</span>
+                  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{val} GB/hr</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Energy cost note */}
-          <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 px-3 py-2">
-            <p className="text-[10px] text-amber-700 dark:text-amber-400">
-              <span className="font-semibold">Est. Energy Cost:</span> CO₂ ÷ 475 g/kWh × ₹7/kWh
-              &nbsp;·&nbsp; Grid factor: 475 g CO₂/kWh (India avg)
+          {/* Conversion notes */}
+          <div className="rounded-lg bg-gray-50 dark:bg-[#1A1A1F] border border-gray-100 dark:border-[#2A2A30] px-3 py-2 space-y-1">
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-indigo-500">1 GB</span> ≈ 0.06 kWh &nbsp;·&nbsp; per IEA network energy model
+            </p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-cyan-500">1 kWh</span> ≈ 475 g CO₂ &nbsp;·&nbsp; India grid emission factor
+            </p>
+            <p className="text-[10px] text-amber-600 dark:text-amber-400">
+              <span className="font-semibold">Est. Cost:</span> kWh × ₹7/kWh (India avg tariff)
             </p>
           </div>
         </div>
@@ -660,6 +680,7 @@ function MetricCard({
   sub,
   subColor = "neutral",
   valueColor = "default",
+  accent,
 }: {
   icon: React.ReactNode
   label: string
@@ -667,6 +688,7 @@ function MetricCard({
   sub: string
   subColor?: "good" | "bad" | "neutral"
   valueColor?: "default" | "amber"
+  accent?: "indigo" | "cyan" | "emerald"
 }) {
   const subCls =
     subColor === "good"
@@ -677,15 +699,28 @@ function MetricCard({
 
   const valueCls = valueColor === "amber"
     ? "text-amber-500 dark:text-amber-400"
+    : accent === "indigo"
+    ? "text-indigo-600 dark:text-indigo-400"
+    : accent === "cyan"
+    ? "text-cyan-600 dark:text-cyan-400"
+    : accent === "emerald"
+    ? "text-emerald-600 dark:text-emerald-400"
     : "text-gray-900 dark:text-white"
+
+  const iconCls =
+    accent === "indigo"
+      ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 dark:text-indigo-400"
+      : accent === "cyan"
+      ? "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-500 dark:text-cyan-400"
+      : accent === "emerald"
+      ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 dark:text-emerald-400"
+      : valueColor === "amber"
+      ? "bg-amber-50 dark:bg-amber-900/20 text-amber-500 dark:text-amber-400"
+      : "bg-gray-100 dark:bg-[#1F1F23] text-gray-600 dark:text-gray-400"
 
   return (
     <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23]">
-      <div className={`inline-flex p-2 rounded-lg mb-4 ${
-        valueColor === "amber"
-          ? "bg-amber-50 dark:bg-amber-900/20 text-amber-500 dark:text-amber-400"
-          : "bg-gray-100 dark:bg-[#1F1F23] text-gray-600 dark:text-gray-400"
-      }`}>
+      <div className={`inline-flex p-2 rounded-lg mb-4 ${iconCls}`}>
         {icon}
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{label}</p>
