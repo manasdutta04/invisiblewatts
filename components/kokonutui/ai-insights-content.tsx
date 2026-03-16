@@ -168,41 +168,47 @@ export default function AiInsightsContent({
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
             Analysis History
           </h2>
-          <div className="rounded-xl bg-white dark:bg-[#0F0F12] border border-gray-200 dark:border-[#1F1F23] overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Entries</TableHead>
-                  <TableHead>CO₂ Estimate</TableHead>
-                  <TableHead>Est. Cost (₹)</TableHead>
-                  <TableHead>Summary</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {analyses.map((a) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-medium">
-                      {new Date(a.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{a.entry_count} {a.entry_count === 1 ? "entry" : "entries"}</TableCell>
-                    <TableCell className="text-green-600 dark:text-green-400 font-medium">
-                      {a.co2_estimate_grams != null
-                        ? a.co2_estimate_grams >= 1000
-                          ? `${(a.co2_estimate_grams / 1000).toFixed(2)} kg CO₂`
-                          : `${a.co2_estimate_grams.toFixed(0)} g CO₂`
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell className="text-amber-600 dark:text-amber-400 font-medium">
-                      {a.co2_estimate_grams != null
-                        ? `₹${((a.co2_estimate_grams / 475) * 7).toFixed(4)}`
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">{a.summary}</TableCell>
+          <div className="rounded-xl bg-white dark:bg-[#0F0F12] border border-gray-200 dark:border-[#1F1F23] max-w-full max-h-[32rem] overflow-x-hidden">
+            <div className="w-full max-w-full overflow-y-auto max-h-[32rem]">
+              <Table className="w-full table-fixed">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-32">Date</TableHead>
+                    <TableHead className="w-24">Entries</TableHead>
+                    <TableHead className="w-32">CO₂ Estimate</TableHead>
+                    <TableHead className="w-32">Est. Cost (₹)</TableHead>
+                    <TableHead>Summary</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {analyses.map((a) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">
+                        {new Date(a.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{a.entry_count} {a.entry_count === 1 ? "entry" : "entries"}</TableCell>
+                      <TableCell className="text-green-600 dark:text-green-400 font-medium">
+                        {a.co2_estimate_grams != null
+                          ? a.co2_estimate_grams >= 1000
+                            ? `${(a.co2_estimate_grams / 1000).toFixed(2)} kg CO₂`
+                            : `${a.co2_estimate_grams.toFixed(0)} g CO₂`
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell className="text-amber-600 dark:text-amber-400 font-medium">
+                        {a.co2_estimate_grams != null
+                          ? `₹${((a.co2_estimate_grams / 475) * 7).toFixed(4)}`
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell className="max-w-[20rem]">
+                        <div className="max-h-12 overflow-y-auto text-sm leading-relaxed break-words whitespace-pre-wrap">
+                          {a.summary}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       )}
