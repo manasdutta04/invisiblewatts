@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -214,47 +214,54 @@ export default function Content({
       ) : (
         <>
           {/* 5 Metric Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <MetricCard
-              icon={<Zap className="w-4 h-4" />}
-              label="Latest CO₂"
-              value={co2Sessions.length ? fmtCo2(latestCo2) : "—"}
-              sub={
-                co2TrendPct !== null
-                  ? `${co2TrendPct > 0 ? "+" : ""}${co2TrendPct}% vs prev session`
-                  : co2Sessions.length ? "first analysis" : "no analyses yet"
-              }
-              subColor={co2TrendPct === null ? "neutral" : co2TrendPct <= 0 ? "good" : "bad"}
-            />
-            <MetricCard
-              icon={<Clock className="w-4 h-4" />}
-              label="Today's Entries"
-              value={String(todayEntryCount)}
-              sub={todayEntryCount === 0 ? "none uploaded today" : `${todayEntryCount === 1 ? "entry" : "entries"} uploaded today`}
-              subColor="neutral"
-            />
-            <MetricCard
-              icon={<BarChart2 className="w-4 h-4" />}
-              label="Avg CO₂ / Session"
-              value={analysesCount ? fmtCo2(avgCo2) : "—"}
-              sub={analysesCount ? `across ${analysesCount} ${analysesCount === 1 ? "analysis" : "analyses"}` : "no analyses yet"}
-              subColor="neutral"
-            />
-            <MetricCard
-              icon={<Monitor className="w-4 h-4" />}
-              label="Top Device"
-              value={topDevice ? topDevice.device : "—"}
-              sub={topDevice ? `${topDevice.hours}h logged total` : "no entries yet"}
-              subColor="neutral"
-            />
-            <MetricCard
-              icon={<IndianRupee className="w-4 h-4" />}
-              label="Est. Energy Cost"
-              value={totalCostRupees > 0 ? `₹${totalCostRupees.toFixed(2)}` : "—"}
-              sub={totalCostRupees > 0 ? "based on ₹7/kWh tariff" : "no analyses yet"}
-              subColor="neutral"
-              valueColor="amber"
-            />
+          <div>
+            {/* Section label row with info button */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Metrics</span>
+              <CarbonInfoTooltip />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <MetricCard
+                icon={<Zap className="w-4 h-4" />}
+                label="Latest CO₂"
+                value={co2Sessions.length ? fmtCo2(latestCo2) : "—"}
+                sub={
+                  co2TrendPct !== null
+                    ? `${co2TrendPct > 0 ? "+" : ""}${co2TrendPct}% vs prev session`
+                    : co2Sessions.length ? "first analysis" : "no analyses yet"
+                }
+                subColor={co2TrendPct === null ? "neutral" : co2TrendPct <= 0 ? "good" : "bad"}
+              />
+              <MetricCard
+                icon={<Clock className="w-4 h-4" />}
+                label="Today's Entries"
+                value={String(todayEntryCount)}
+                sub={todayEntryCount === 0 ? "none uploaded today" : `${todayEntryCount === 1 ? "entry" : "entries"} uploaded today`}
+                subColor="neutral"
+              />
+              <MetricCard
+                icon={<BarChart2 className="w-4 h-4" />}
+                label="Avg CO₂ / Session"
+                value={analysesCount ? fmtCo2(avgCo2) : "—"}
+                sub={analysesCount ? `across ${analysesCount} ${analysesCount === 1 ? "analysis" : "analyses"}` : "no analyses yet"}
+                subColor="neutral"
+              />
+              <MetricCard
+                icon={<Monitor className="w-4 h-4" />}
+                label="Top Device"
+                value={topDevice ? topDevice.device : "—"}
+                sub={topDevice ? `${topDevice.hours}h logged total` : "no entries yet"}
+                subColor="neutral"
+              />
+              <MetricCard
+                icon={<IndianRupee className="w-4 h-4" />}
+                label="Est. Energy Cost"
+                value={totalCostRupees > 0 ? `₹${totalCostRupees.toFixed(2)}` : "—"}
+                sub={totalCostRupees > 0 ? "based on ₹7/kWh tariff" : "no analyses yet"}
+                subColor="neutral"
+                valueColor="amber"
+              />
+            </div>
           </div>
 
           {/* Charts — side by side */}
@@ -533,6 +540,115 @@ export default function Content({
           )}
         </>
       )}
+    </div>
+  )
+}
+
+function CarbonInfoTooltip() {
+  return (
+    <div className="relative group inline-flex items-center">
+      {/* Trigger button */}
+      <button
+        type="button"
+        aria-label="How Digital Carbon is Calculated"
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium
+          text-indigo-600 dark:text-indigo-400
+          bg-indigo-50 dark:bg-indigo-900/30
+          border border-indigo-200 dark:border-indigo-700/50
+          hover:bg-indigo-100 dark:hover:bg-indigo-900/50
+          transition-colors cursor-default select-none"
+      >
+        <Info className="w-3 h-3" />
+        How Digital Carbon is Calculated
+      </button>
+
+      {/* Tooltip popover */}
+      <div
+        className="
+          pointer-events-none absolute z-50 bottom-full left-0 mb-2
+          w-80 rounded-xl
+          bg-white dark:bg-[#131316]
+          border border-gray-200 dark:border-[#2A2A30]
+          shadow-2xl shadow-black/20
+          opacity-0 -translate-y-1 scale-95
+          group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100
+          transition-all duration-200 ease-out
+        "
+        role="tooltip"
+      >
+        {/* Arrow */}
+        <div className="absolute -bottom-1.5 left-5 w-3 h-3 rotate-45 bg-white dark:bg-[#131316] border-r border-b border-gray-200 dark:border-[#2A2A30]" />
+
+        <div className="px-4 py-4 space-y-3">
+          {/* Header */}
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/40">
+              <Info className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">How Digital Carbon is Calculated</p>
+          </div>
+
+          {/* Formula */}
+          <div className="rounded-lg bg-gray-50 dark:bg-[#1A1A1F] border border-gray-100 dark:border-[#2A2A30] px-3 py-2.5">
+            <p className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 font-semibold">
+              CO₂ (g) = Base × Multiplier × Hours
+            </p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-1">
+              summed per device entry, then converted to kg if ≥ 1000 g
+            </p>
+          </div>
+
+          {/* Device base values */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Device base (g CO₂/hr)</p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+              {[
+                ["Phone", "0.4"],
+                ["Laptop", "10"],
+                ["Tablet", "3"],
+                ["Desktop", "20"],
+                ["Smart TV", "35"],
+                ["Console", "50"],
+                ["Smartwatch", "0.05"],
+              ].map(([device, val]) => (
+                <div key={device} className="flex justify-between">
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">{device}</span>
+                  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{val} g</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity multipliers */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Activity multiplier</p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+              {[
+                ["Streaming", "3×"],
+                ["Gaming", "2×"],
+                ["Social", "2×"],
+                ["Calls", "1.5×"],
+                ["Browsing", "1×"],
+                ["Productivity", "0.7×"],
+                ["Mixed", "1.2×"],
+              ].map(([act, val]) => (
+                <div key={act} className="flex justify-between">
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">{act}</span>
+                  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Energy cost note */}
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 px-3 py-2">
+            <p className="text-[10px] text-amber-700 dark:text-amber-400">
+              <span className="font-semibold">Est. Energy Cost:</span> CO₂ ÷ 475 g/kWh × ₹7/kWh
+              &nbsp;·&nbsp; Grid factor: 475 g CO₂/kWh (India avg)
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

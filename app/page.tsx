@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import {
   Zap, BarChart3, Brain, Upload, ShieldCheck, Leaf,
-  Chrome, ArrowRight, Check,
+  Chrome, ArrowRight, Check, Monitor, Database, Cloud,
 } from "lucide-react"
 import LandingNavbar from "@/components/landing-navbar"
 
@@ -63,6 +63,34 @@ const steps = [
     n: "03",
     title: "Reduce your footprint",
     desc: "Get a ranked list of changes that will cut the most carbon from your digital routine.",
+  },
+]
+
+const calculationSteps = [
+  {
+    icon: Monitor,
+    title: "Digital Activity",
+    desc: "Streaming, browsing, gaming, video calls",
+  },
+  {
+    icon: Database,
+    title: "Data Usage",
+    desc: "Amount of internet data used",
+  },
+  {
+    icon: Zap,
+    title: "Energy Consumption",
+    desc: "Energy used by data centers and networks",
+  },
+  {
+    icon: Cloud,
+    title: "CO₂ Emissions",
+    desc: "Carbon generated from electricity used",
+  },
+  {
+    icon: Brain,
+    title: "AI Recommendations",
+    desc: "Tips to reduce digital carbon footprint",
   },
 ]
 
@@ -359,6 +387,40 @@ export default async function LandingPage() {
                 </div>
                 <h3 className="font-semibold text-white mb-2">{s.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How Digital Carbon is Calculated ────────────────────────── */}
+      <section id="calculation" className="py-28 px-4 sm:px-6 border-t border-white/[0.06]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-xs text-cyan-400 uppercase tracking-widest font-semibold mb-3">How it works</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              How Digital Carbon<br />is Calculated
+            </h2>
+            <p className="text-gray-500 max-w-md mx-auto text-sm leading-relaxed">
+              From your digital activity to actionable AI recommendations — here's the process.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-6">
+            {calculationSteps.map((step, index) => (
+              <div key={step.title} className="flex items-center">
+                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all group flex-1 max-w-xs">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/25 flex items-center justify-center mb-4">
+                    <step.icon className="w-5 h-5 text-cyan-300" />
+                  </div>
+                  <h3 className="font-semibold text-white mb-2 text-sm">{step.title}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{step.desc}</p>
+                </div>
+                {index < calculationSteps.length - 1 && (
+                  <div className="hidden lg:flex items-center justify-center mx-4">
+                    <ArrowRight className="w-5 h-5 text-gray-600" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
