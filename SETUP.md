@@ -81,7 +81,8 @@ invisiblewatts/
 │   │   ├── analyze/route.ts   Groq AI endpoint (image extraction + CO₂ analysis)
 │   │   └── status/route.ts    Health check → { ok: boolean }
 │   ├── auth/actions.ts        signIn · signUp · signOut server actions
-│   ├── demo/actions.ts        toggleDemoMode (sets iw_demo_mode cookie)
+│   ├── demo/actions.ts        toggleDemoMode (sets iw_demo_mode cookie via sidebar)
+│   ├── demo/route.ts          GET /demo → sets iw_demo_mode cookie + redirects to /dashboard (public, no auth)
 │   ├── settings/actions.ts    updateProfile · updateGoals · updateNotifications
 │   ├── layout.tsx             Root layout — Inter font, ThemeProvider, metadata
 │   ├── page.tsx               Landing page (redirects logged-in users to /dashboard)
@@ -146,6 +147,12 @@ chrome-extension/
 
 ### Loading in Chrome
 
+**Option A — from GitHub Releases (easiest):**
+1. Download `invisiblewatts-extension-v1.1.0.zip` from the [releases page](https://github.com/manasdutta04/invisiblewatts/releases)
+2. Unzip
+3. Open `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the unzipped folder
+
+**Option B — from source:**
 1. Open `chrome://extensions`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**

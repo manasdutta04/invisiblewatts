@@ -16,7 +16,7 @@
 [![Extension v1.1.0](https://img.shields.io/badge/Extension-v1.1.0-f97316?logo=googlechrome&logoColor=white)](https://github.com/manasdutta04/invisiblewatts/releases)
 [![Open in v0](https://img.shields.io/badge/Open%20in-v0-black?logo=vercel&logoColor=white)](https://v0.app/chat/projects/prj_bvkaxpFYEFdavofL2NsqwguCfEMy)
 
-
+**[🌐 Live App](https://invisiblewatts.vercel.app/) · [▶ Try Demo — no account needed](https://invisiblewatts.vercel.app/demo) · [📦 Chrome Extension v1.1.0](https://github.com/manasdutta04/invisiblewatts/releases)**
 
 </div>
 
@@ -98,6 +98,8 @@ Energy cost conversion (India):
   ₹    = kWh × 7                 (India avg domestic tariff: ₹7/kWh)
 ```
 
+> **Sources:** IEA global grid carbon intensity (475 gCO₂/kWh) · Carbon Trust device lifecycle reports (device wattage) · The Shift Project — *Lean ICT: Towards Digital Sobriety* (2019) (activity multipliers) · MNRE India average domestic tariff ₹7/kWh (2024)
+
 ### Chrome Extension Architecture
 
 ```mermaid
@@ -119,9 +121,14 @@ sequenceDiagram
     participant Middleware
     participant Supabase
 
-    Browser->>Middleware: GET /dashboard
+    Browser->>Middleware: GET /demo
+    Middleware-->>Browser: Set-Cookie iw_demo_mode=1 · 302 → /dashboard
+
+    Browser->>Middleware: GET /dashboard (with iw_demo_mode=1)
     Middleware->>Supabase: getUser() via SSR cookie
-    alt Not authenticated
+    alt Not authenticated + demo cookie
+        Middleware-->>Browser: 200 — render page with demo data
+    else Not authenticated, no demo cookie
         Middleware-->>Browser: 302 → /login
     else Authenticated
         Middleware-->>Browser: 200 — render page
@@ -161,7 +168,16 @@ For environment variables, database setup, project structure, and Chrome extensi
 
 ## Demo Mode
 
-A cookie (`iw_demo_mode=1`) overlays static hardcoded data across every data page, so anyone can explore the full UI without uploading anything. Toggle it from the sidebar's **Demo** button — it turns violet with an "ON" badge when active. Server components check `cookies().get("iw_demo_mode")?.value === "1"` and return data from `lib/demo-data.ts` instead of querying Supabase.
+A cookie (`iw_demo_mode=1`) overlays static hardcoded data across every data page, so anyone can explore the full UI without uploading anything.
+
+**Two ways to activate:**
+
+| Method | How |
+|---|---|
+| **Public URL** | Visit [`/demo`](https://invisiblewatts.vercel.app/demo) — sets the cookie and redirects to the dashboard. No account required. |
+| **Sidebar toggle** | Sign in, then click the **Demo** button in the sidebar — it turns violet with an "ON" badge when active. |
+
+Server components check `cookies().get("iw_demo_mode")?.value === "1"` and return data from `lib/demo-data.ts` instead of querying Supabase. The middleware allows unauthenticated users through to all app routes when the demo cookie is present (`app/demo/route.ts` sets it).
 
 ---
 
