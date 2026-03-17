@@ -362,6 +362,59 @@ export default function Content({
             </div> {/* end 5-card grid */}
           </div> {/* end metric cards section */}
 
+          {/* Performance Benchmark */}
+          {(() => {
+            const weekTotal = dailyCo2.reduce((s, d) => s + d.co2, 0)
+            const AVG_WEEKLY_CO2 = 600 // gCO₂ — global average for digital activity
+            const pctDiff = Math.round(Math.abs(AVG_WEEKLY_CO2 - weekTotal) / AVG_WEEKLY_CO2 * 100)
+            const isBetter = weekTotal < AVG_WEEKLY_CO2
+            if (weekTotal === 0) return null
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Performance Benchmark</span>
+                </div>
+                <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23] p-5">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    {/* Stat pair */}
+                    <div className="flex items-center gap-8 flex-shrink-0">
+                      <div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mb-1">Your weekly CO₂</p>
+                        <p className={`text-2xl font-bold tabular-nums ${isBetter ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
+                          {fmtCo2(weekTotal)}
+                        </p>
+                      </div>
+                      <div className="w-px h-10 bg-gray-200 dark:bg-[#1F1F23] hidden sm:block" />
+                      <div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mb-1">Average user</p>
+                        <p className="text-2xl font-bold text-gray-400 dark:text-gray-500 tabular-nums">{fmtCo2(AVG_WEEKLY_CO2)}</p>
+                      </div>
+                    </div>
+                    {/* Bar + verdict */}
+                    <div className="flex-1 w-full md:w-auto">
+                      {/* Progress bar where the avg marker sits at 67% (600 / 900) */}
+                      <div className="relative h-2 bg-gray-100 dark:bg-[#1A1A1F] rounded-full overflow-hidden mb-3">
+                        <div
+                          className={`absolute left-0 top-0 h-full rounded-full ${isBetter ? "bg-emerald-500" : "bg-red-400"}`}
+                          style={{ width: `${Math.min(Math.round((weekTotal / 900) * 100), 100)}%` }}
+                        />
+                        {/* Average line at 66.7% */}
+                        <div className="absolute top-0 h-full w-0.5 bg-gray-400 dark:bg-gray-500 opacity-60" style={{ left: "66.7%" }} />
+                      </div>
+                      <p className={`text-sm font-semibold flex items-center gap-1.5 ${isBetter ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                        {isBetter ? (
+                          <><span>✅</span><span>You are {pctDiff}% better than average</span></>
+                        ) : (
+                          <><span>⚠️</span><span>You are {pctDiff}% above average emissions</span></>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Your Carbon Impact section */}
           {dataBasedCo2 > 0 && (
             <div className="space-y-4">
