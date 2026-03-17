@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown, CheckCircle2, MousePointer2, Pencil, Target, Flame, Trophy, Check } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown, CheckCircle2, MousePointer2, Pencil, Target } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -37,6 +37,7 @@ interface TodayEntry {
 
 interface ContentProps {
   userName: string
+  currentStreak: number
   totalCo2: number
   totalCostRupees: number
   totalHours: number
@@ -95,6 +96,7 @@ function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payl
 
 export default function Content({
   userName,
+  currentStreak,
   totalCo2,
   totalCostRupees,
   totalHours,
@@ -162,74 +164,11 @@ export default function Content({
   }
 
   const [appliedActions, setAppliedActions] = useState<string[]>([])
-  const [streak, setStreak] = useState(0)
-  const [bestStreak, setBestStreak] = useState(0)
-  const [lastStreakDate, setLastStreakDate] = useState("")
 
   useEffect(() => {
     const savedGoal = localStorage.getItem("iw_weekly_co2_goal")
     if (savedGoal) setWeeklyGoal(Number(savedGoal))
-
-    const savedStreak = localStorage.getItem("iw_green_streak")
-    const savedBest = localStorage.getItem("iw_best_streak")
-    const savedDate = localStorage.getItem("iw_last_streak_date")
-    if (savedStreak) setStreak(Number(savedStreak))
-    if (savedBest) setBestStreak(Number(savedBest))
-    if (savedDate) setLastStreakDate(savedDate)
   }, [])
-
-  useEffect(() => {
-    if (dailyCo2.length < 2) return
-    const todayVal = dailyCo2[6].co2
-    const yesterdayVal = dailyCo2[5].co2
-    const todayStr = new Date().toISOString().slice(0, 10)
-    
-    // Calculate yesterday's date string
-    const yesterdayDate = new Date()
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1)
-    const yesterdayStr = yesterdayDate.toISOString().slice(0, 10)
-
-    const updateStreak = (newVal: number, newDate: string) => {
-      setStreak(newVal)
-      setLastStreakDate(newDate)
-      localStorage.setItem("iw_green_streak", String(newVal))
-      localStorage.setItem("iw_last_streak_date", newDate)
-
-      if (newVal > bestStreak) {
-        setBestStreak(newVal)
-        localStorage.setItem("iw_best_streak", String(newVal))
-      }
-    }
-
-    if (todayVal > 0) {
-      if (todayVal <= yesterdayVal) {
-        if (lastStreakDate === yesterdayStr) {
-          // Continuation
-          updateStreak(streak + 1, todayStr)
-        } else if (lastStreakDate !== todayStr) {
-          // New start (maybe they missed days before)
-          updateStreak(1, todayStr)
-        }
-      } else {
-        // Over limit for today - reset
-        if (streak > 0 || lastStreakDate !== todayStr) {
-          updateStreak(0, todayStr)
-        }
-      }
-    } else {
-      // No data today yet. Reset if we missed yesterday.
-      if (lastStreakDate && lastStreakDate !== todayStr && lastStreakDate !== yesterdayStr) {
-        updateStreak(0, "")
-      }
-    }
-  }, [dailyCo2, lastStreakDate, streak, bestStreak])
-
-  const getStreakMessage = (s: number) => {
-    if (s >= 7) return "🌱 You're a carbon-conscious user"
-    if (s >= 3) return "🔥 You're building a habit"
-    if (s >= 1) return "Good start 👍"
-    return "Start a reduction streak today!"
-  }
 
   const actions = [
     { id: "stream", label: "Reduce Streaming Quality", reduction: 200, icon: <Monitor className="w-4 h-4" /> },
@@ -303,30 +242,12 @@ export default function Content({
           </p>
         </div>
 
-        {streak > 0 && (
-          <div className="group relative flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30 overflow-hidden transition-all duration-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] animate-in fade-in slide-in-from-right-4">
-            {/* Subtle glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/5 to-cyan-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            <div className="relative text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform duration-300">🔥</div>
-            <div className="relative">
-              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-                {streak} Day Green Streak
-              </p>
-              <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/60 font-medium tracking-tight">
-                {getStreakMessage(streak)}
-              </p>
-            </div>
-            
-            {/* Ping animation sensor */}
-            <div className="absolute top-2 right-2">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-20"></span>
-                <span className="relative inline-flex rounded-full h-1 w-1 bg-emerald-500/50"></span>
-              </span>
-            </div>
-          </div>
-        )}
+        <div className="self-start md:self-end flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30">
+          <span className="text-sm leading-none">🔥</span>
+          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+            {currentStreak} {currentStreak === 1 ? "day" : "days"}
+          </span>
+        </div>
       </div>
 
       {isDemoMode && (
@@ -448,15 +369,7 @@ export default function Content({
             </div>
 
             {/* ── 6 session-based metric cards ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              <MetricCard
-                icon={<Flame className="w-4 h-4" />}
-                accent="emerald"
-                label="Current Streak"
-                value={`${streak} Days`}
-                sub={streak > 0 ? getStreakMessage(streak) : "Start a streak today!"}
-                subColor={streak > 0 ? "good" : "neutral"}
-              />
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 icon={<Zap className="w-4 h-4" />}
                 label="Latest CO₂"
@@ -474,14 +387,6 @@ export default function Content({
                 value={String(todayEntryCount)}
                 sub={todayEntryCount === 0 ? "none uploaded today" : `${todayEntryCount === 1 ? "entry" : "entries"} uploaded today`}
                 subColor="neutral"
-              />
-              <MetricCard
-                icon={<Trophy className="w-4 h-4" />}
-                accent="emerald"
-                label="Best Streak"
-                value={`${bestStreak} Days`}
-                sub="Your personal record"
-                subColor="good"
               />
               <MetricCard
                 icon={<Monitor className="w-4 h-4" />}
@@ -553,92 +458,6 @@ export default function Content({
               </div>
             )
           })()}
-
-          {/* Streaks & Achievements */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Streaks & Achievements</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Streak Tracker Card */}
-              <div className="md:col-span-2 bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23] p-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-                  <Flame className="w-32 h-32 text-emerald-500" />
-                </div>
-                
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-6">Recent Consistency</h3>
-                <div className="flex items-center justify-between gap-2">
-                  {dailyCo2.map((d, i) => {
-                    const hasData = d.co2 > 0
-                    const isReduction = i > 0 && hasData && dailyCo2[i-1].co2 > 0 && d.co2 <= dailyCo2[i-1].co2
-                    return (
-                      <div key={d.day} className="flex flex-col items-center gap-3">
-                        <div className={`
-                          w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500
-                          ${isReduction 
-                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]" 
-                            : hasData 
-                              ? "bg-gray-100 dark:bg-[#1A1A1F] border-gray-200 dark:border-[#2A2A30] text-gray-400"
-                              : "bg-transparent border-dashed border-gray-200 dark:border-[#2A2A30] text-gray-300"
-                          }
-                        `}>
-                          {isReduction ? <Check className="w-5 h-5" /> : <div className="w-1.5 h-1.5 rounded-full bg-current" />}
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase">{d.day}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-                
-                <div className="mt-8 p-4 rounded-xl bg-gray-50 dark:bg-[#1A1A1F] border border-gray-100 dark:border-[#2A2A30] flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-emerald-500 text-white">
-                    <Flame className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      Current: {streak} {streak === 1 ? "day" : "days"} · Best: {bestStreak} {bestStreak === 1 ? "day" : "days"}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {streak > 0 ? getStreakMessage(streak) : "Log your usage today to start a new streak!"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Milestones Card */}
-              <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23] p-6">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Milestones</h3>
-                <div className="space-y-4">
-                  {[
-                    { days: 1, label: "First Reduction", icon: <Zap className="w-3.5 h-3.5" /> },
-                    { days: 3, label: "3-Day Sprint", icon: <Flame className="w-3.5 h-3.5" /> },
-                    { days: 7, label: "Green Week", icon: <Trophy className="w-3.5 h-3.5" /> },
-                  ].map((m) => {
-                    const isAchieved = bestStreak >= m.days
-                    return (
-                      <div key={m.label} className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isAchieved ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30" : "bg-gray-50/50 dark:bg-[#1A1A1F]/50 border-transparent grayscale"}`}>
-                        <div className={`p-2 rounded-lg ${isAchieved ? "bg-emerald-500 text-white" : "bg-gray-200 dark:bg-[#2A2A30] text-gray-400"}`}>
-                          {m.icon}
-                        </div>
-                        <div>
-                          <p className={`text-xs font-bold ${isAchieved ? "text-emerald-700 dark:text-emerald-400" : "text-gray-500"}`}>
-                            {m.label}
-                          </p>
-                          <p className="text-[10px] text-gray-400 italic">
-                            {isAchieved ? "Achieved!" : `${m.days} days streak`}
-                          </p>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Weekly Carbon Goal */}
           {(() => {

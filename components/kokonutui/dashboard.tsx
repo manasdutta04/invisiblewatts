@@ -24,6 +24,7 @@ export default async function Dashboard() {
       <Layout>
         <Content
           userName="there"
+          currentStreak={3}
           totalCo2={3840}
           totalCostRupees={Math.round((3840 / GRID_G_PER_KWH) * INR_PER_KWH * 100) / 100}
           totalHours={42.5}
@@ -141,6 +142,16 @@ export default async function Dashboard() {
   }))
 
   const today = new Date().toISOString().slice(0, 10)
+  const entryDateSet = new Set((entries ?? []).map((e) => e.date))
+  let currentStreak = 0
+  for (let i = 0; ; i += 1) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dateStr = d.toISOString().slice(0, 10)
+    if (!entryDateSet.has(dateStr)) break
+    currentStreak += 1
+  }
+
   const latestAnalysisAt = analyses?.at(-1)?.created_at ?? null
   const unanalyzedCount = latestAnalysisAt
     ? (entries ?? []).filter((e) => e.created_at > latestAnalysisAt).length
@@ -173,6 +184,7 @@ export default async function Dashboard() {
     <Layout>
       <Content
         userName={userName}
+        currentStreak={currentStreak}
         totalCo2={totalCo2}
         totalCostRupees={totalCostRupees}
         totalHours={totalHours}
