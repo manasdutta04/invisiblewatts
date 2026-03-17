@@ -16,7 +16,7 @@
 [![Extension v1.1.0](https://img.shields.io/badge/Extension-v1.1.0-f97316?logo=googlechrome&logoColor=white)](https://github.com/manasdutta04/invisiblewatts/releases)
 [![Open in v0](https://img.shields.io/badge/Open%20in-v0-black?logo=vercel&logoColor=white)](https://v0.app/chat/projects/prj_bvkaxpFYEFdavofL2NsqwguCfEMy)
 
-**[🌐 Live App](https://invisiblewatts.vercel.app/) · [▶ Try Demo — no account needed](https://invisiblewatts.vercel.app/demo) · [📦 Chrome Extension v1.1.0](https://github.com/manasdutta04/invisiblewatts/releases)**
+**[🌐 Live App](https://invisiblewatts.vercel.app/) · [📦 Chrome Extension v1.1.0](https://github.com/manasdutta04/invisiblewatts/releases)**
 
 </div>
 
