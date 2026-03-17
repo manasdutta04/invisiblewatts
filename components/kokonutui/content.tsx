@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown, CheckCircle2, MousePointer2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -142,6 +142,24 @@ export default function Content({
     } finally {
       setIsAnalyzing(false)
     }
+  }
+
+  const [appliedActions, setAppliedActions] = useState<string[]>([])
+
+  const actions = [
+    { id: "stream", label: "Reduce Streaming Quality", reduction: 200, icon: <Monitor className="w-4 h-4" /> },
+    { id: "screen", label: "Limit Screen Time", reduction: 150, icon: <Clock className="w-4 h-4" /> },
+    { id: "dark", label: "Enable Dark Mode", reduction: 50, icon: <Sparkles className="w-4 h-4" /> },
+  ]
+
+  const totalReduction = actions
+    .filter(a => appliedActions.includes(a.id))
+    .reduce((sum, a) => sum + a.reduction, 0)
+
+  const toggleAction = (id: string) => {
+    setAppliedActions(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
   }
 
   // Derived metric values
@@ -868,6 +886,70 @@ export default function Content({
               </ul>
             </div>
           )}
+
+          {/* Take Action Section */}
+          <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <MousePointer2 className="w-5 h-5 text-emerald-500" />
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Take Action
+                </h2>
+              </div>
+              {totalReduction > 0 && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-100 dark:border-emerald-800/50 flex items-center gap-2">
+                  <Leaf className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    Est. Saved: {totalReduction}g CO₂ / week
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {actions.map((action) => {
+                const isApplied = appliedActions.includes(action.id)
+                return (
+                  <button
+                    key={action.id}
+                    onClick={() => toggleAction(action.id)}
+                    className={`
+                      relative flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300
+                      ${isApplied 
+                        ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/10" 
+                        : "bg-gray-50 dark:bg-[#1A1A1F] border-gray-100 dark:border-[#2A2A30] text-gray-500 dark:text-gray-400 hover:border-gray-200 dark:hover:border-[#3A3A40] hover:bg-gray-100 dark:hover:bg-[#202025]"
+                      }
+                    `}
+                  >
+                    <div className={`
+                      p-2.5 rounded-lg mb-3 transition-colors duration-300
+                      ${isApplied ? "bg-emerald-500 text-white" : "bg-white dark:bg-[#0F0F12] border border-gray-100 dark:border-[#1F1F23]"}
+                    `}>
+                      {isApplied ? <CheckCircle2 className="w-5 h-5" /> : action.icon}
+                    </div>
+                    <span className="text-sm font-bold text-center leading-tight mb-1">{action.label}</span>
+                    <span className={`text-[10px] uppercase tracking-wider font-semibold ${isApplied ? "text-emerald-500" : "text-gray-400"}`}>
+                      {isApplied ? "Applied" : `-${action.reduction}g CO₂ / week`}
+                    </span>
+                    {isApplied && (
+                      <div className="absolute top-2 right-2">
+                        <span className="flex h-2 w-2 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            
+            {!appliedActions.length && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-6 italic">
+                Select an action above to see how much carbon you can save.
+              </p>
+            )}
+          </div>
         </>
       )}
     </div>
