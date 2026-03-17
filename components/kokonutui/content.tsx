@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -327,6 +327,50 @@ export default function Content({
               />
             </div> {/* end 5-card grid */}
           </div> {/* end metric cards section */}
+
+          {/* Your Carbon Impact section */}
+          {dataBasedCo2 > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Your Carbon Impact</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23] flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-500 dark:text-purple-400">
+                    <Smartphone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Equivalent to</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight mt-0.5">
+                      Charging {Math.round((dataBasedCo2 / 100) * 12)} smartphones
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23] flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400">
+                    <Car className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Equivalent to</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight mt-0.5">
+                      Driving {((dataBasedCo2 / 500) * 2).toFixed(1).replace(/\.0$/, '')} km in a car
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-5 border border-gray-200 dark:border-[#1F1F23] flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-900/20 text-sky-500 dark:text-sky-400">
+                    <Fan className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Equivalent to</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight mt-0.5">
+                      Running a fan for {((dataBasedCo2 / 1000) * 30).toFixed(1).replace(/\.0$/, '')} hours
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Charts — side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
