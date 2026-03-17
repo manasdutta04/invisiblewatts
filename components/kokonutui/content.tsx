@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -738,6 +738,53 @@ export default function Content({
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Below 70: High Digital Carbon
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enterprise Carbon Dashboard (Placeholder) */}
+          <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 border border-gray-200 dark:border-[#1F1F23]">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-indigo-500" />
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Enterprise Carbon Dashboard
+                </h2>
+              </div>
+              <span className="px-2 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">Coming Soon</span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 pb-6 border-b border-gray-100 dark:border-[#1F1F23]">
+              Track and analyze team-level digital carbon emissions across your entire organization. Identify high-impact areas, set sustainability goals, and foster a greener digital workplace.
+            </p>
+            
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 opacity-75 grayscale-[0.3]">
+              <div className="bg-gray-50 dark:bg-[#1A1A1F] rounded-lg p-4 border border-gray-100 dark:border-[#2A2A30]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-blue-500" />
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Employees Tracked</p>
+                </div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">1,248</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#1A1A1F] rounded-lg p-4 border border-gray-100 dark:border-[#2A2A30]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Leaf className="w-4 h-4 text-emerald-500" />
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Total Emissions</p>
+                </div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">4.2 t CO₂</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#1A1A1F] rounded-lg p-4 border border-gray-100 dark:border-[#2A2A30]">
+                <div className="flex items-center gap-2 mb-2">
+                  <PieChart className="w-4 h-4 text-orange-500" />
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Top Dept (Eng)</p>
+                </div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">1.8 t CO₂</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#1A1A1F] rounded-lg p-4 border border-gray-100 dark:border-[#2A2A30]">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingDown className="w-4 h-4 text-cyan-500" />
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Sustainability</p>
+                </div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">84 / 100</p>
               </div>
             </div>
           </div>
