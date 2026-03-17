@@ -294,9 +294,9 @@ export default async function LandingPage() {
 
             {/* Left: copy */}
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs text-blue-300 mb-6">
-                <Zap className="w-3 h-3" />
-                Powered by Advanced AI Analysis
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-400 mb-6">
+                <span className="text-sm">⚡</span>
+                1 hour of HD streaming = up to 100g CO₂
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold leading-[1.08] tracking-tight">
                 Make the invisible<br />carbon{" "}
@@ -309,15 +309,6 @@ export default async function LandingPage() {
               
               <p className="mt-4 text-[1.35rem] text-gray-400/90 leading-snug font-medium tracking-tight">
                 Every scroll, stream, and click consumes energy — your digital life has a hidden carbon footprint.
-              </p>
-
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-400">
-                <span className="text-sm">⚡</span>
-                1 hour of HD streaming = up to 100g CO₂
-              </div>
-
-              <p className="mt-4 text-[17px] text-gray-500 leading-relaxed max-w-[440px]">
-                Track your digital carbon emissions in real time and get actionable insights to reduce your impact.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-4">
