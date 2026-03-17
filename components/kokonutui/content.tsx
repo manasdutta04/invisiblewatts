@@ -1,9 +1,9 @@
 "use client"
 
-import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown } from "lucide-react"
+import { Clock, Sparkles, FlaskConical, PlugZap, Loader2, Zap, BarChart2, Monitor, IndianRupee, Info, Wifi, BatteryCharging, Leaf, Smartphone, Car, Fan, Users, Building2, TrendingDown, Pencil, Target } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import {
   BarChart, Bar,
@@ -122,6 +122,23 @@ export default function Content({
   const router = useRouter()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [chartTab, setChartTab] = useState<"Today" | "7D" | "All">("7D")
+  const [weeklyGoal, setWeeklyGoal] = useState<number>(480) // default: 20% below the 600g average
+  const [isEditingGoal, setIsEditingGoal] = useState(false)
+  const [goalInput, setGoalInput] = useState("")
+
+  useEffect(() => {
+    const saved = localStorage.getItem("iw_weekly_co2_goal")
+    if (saved) setWeeklyGoal(Number(saved))
+  }, [])
+
+  function saveGoal() {
+    const v = parseInt(goalInput)
+    if (!isNaN(v) && v > 0) {
+      setWeeklyGoal(v)
+      localStorage.setItem("iw_weekly_co2_goal", String(v))
+    }
+    setIsEditingGoal(false)
+  }
 
   async function handleRunAnalysis() {
     setIsAnalyzing(true)
@@ -409,6 +426,95 @@ export default function Content({
                         )}
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Weekly Carbon Goal */}
+          {(() => {
+            const weekTotal = dailyCo2.reduce((s, d) => s + d.co2, 0)
+            if (weekTotal === 0) return null
+            const pct = Math.min(Math.round((weekTotal / weeklyGoal) * 100), 100)
+            const isOnTrack = weekTotal <= weeklyGoal
+            const diff = Math.abs(weekTotal - weeklyGoal)
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Target className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Weekly Carbon Goal</span>
+                </div>
+                <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23] p-5">
+                  {/* Header row: stats + status badge */}
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="flex items-center gap-8">
+                      {/* Current */}
+                      <div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mb-1">Current</p>
+                        <p className={`text-2xl font-bold tabular-nums ${isOnTrack ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
+                          {fmtCo2(weekTotal)}
+                        </p>
+                      </div>
+                      <div className="w-px h-10 bg-gray-200 dark:bg-[#1F1F23] hidden sm:block" />
+                      {/* Goal (editable) */}
+                      <div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mb-1">Goal</p>
+                        {isEditingGoal ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              autoFocus
+                              type="number"
+                              min={1}
+                              value={goalInput}
+                              onChange={(e) => setGoalInput(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") saveGoal(); if (e.key === "Escape") setIsEditingGoal(false) }}
+                              className="w-24 px-2 py-1 text-sm font-bold rounded-lg border border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white focus:outline-none"
+                              placeholder={String(weeklyGoal)}
+                            />
+                            <button onClick={saveGoal} className="text-xs font-semibold text-blue-500 hover:text-blue-600 px-1.5 py-1">Save</button>
+                            <button onClick={() => setIsEditingGoal(false)} className="text-xs text-gray-400 hover:text-gray-600 px-1.5 py-1">Cancel</button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{fmtCo2(weeklyGoal)}</p>
+                            <button
+                              onClick={() => { setGoalInput(String(weeklyGoal)); setIsEditingGoal(true) }}
+                              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                              aria-label="Edit goal"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Status badge */}
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isOnTrack ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" : "bg-red-50 dark:bg-red-900/20 text-red-500"}`}>
+                      {isOnTrack ? "On Track" : "Over Goal"}
+                    </span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[11px] text-gray-400 dark:text-gray-500">
+                      <span>0 g</span>
+                      <span>{pct}% of goal used</span>
+                      <span>{fmtCo2(weeklyGoal)}</span>
+                    </div>
+                    <div className="relative h-3 bg-gray-100 dark:bg-[#1A1A1F] rounded-full overflow-hidden">
+                      <div
+                        className={`absolute left-0 top-0 h-full rounded-full transition-all duration-700 ${isOnTrack ? "bg-emerald-500" : "bg-red-400"}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className={`text-sm font-semibold flex items-center gap-1.5 ${isOnTrack ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                      {isOnTrack ? (
+                        <><span>✅</span><span>{fmtCo2(diff)} under your weekly goal</span></>
+                      ) : (
+                        <><span>⚠️</span><span>{fmtCo2(diff)} over your weekly goal — aim to reduce screen time</span></>
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
