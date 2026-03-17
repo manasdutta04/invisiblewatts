@@ -162,6 +162,66 @@ export default function Content({
   }
 
   const [appliedActions, setAppliedActions] = useState<string[]>([])
+  const [streak, setStreak] = useState(0)
+  const [lastStreakDate, setLastStreakDate] = useState("")
+
+  useEffect(() => {
+    const savedGoal = localStorage.getItem("iw_weekly_co2_goal")
+    if (savedGoal) setWeeklyGoal(Number(savedGoal))
+
+    const savedStreak = localStorage.getItem("iw_green_streak")
+    const savedDate = localStorage.getItem("iw_last_streak_date")
+    if (savedStreak) setStreak(Number(savedStreak))
+    if (savedDate) setLastStreakDate(savedDate)
+  }, [])
+
+  useEffect(() => {
+    if (dailyCo2.length < 2) return
+    const todayVal = dailyCo2[6].co2
+    const yesterdayVal = dailyCo2[5].co2
+    const todayStr = new Date().toISOString().slice(0, 10)
+    
+    // Calculate yesterday's date string
+    const yesterdayDate = new Date()
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+    const yesterdayStr = yesterdayDate.toISOString().slice(0, 10)
+
+    const updateStreak = (newVal: number, newDate: string) => {
+      setStreak(newVal)
+      setLastStreakDate(newDate)
+      localStorage.setItem("iw_green_streak", String(newVal))
+      localStorage.setItem("iw_last_streak_date", newDate)
+    }
+
+    if (todayVal > 0) {
+      if (todayVal <= yesterdayVal) {
+        if (lastStreakDate === yesterdayStr) {
+          // Continuation
+          updateStreak(streak + 1, todayStr)
+        } else if (lastStreakDate !== todayStr) {
+          // New start (maybe they missed days before)
+          updateStreak(1, todayStr)
+        }
+      } else {
+        // Over limit for today - reset
+        if (streak > 0 || lastStreakDate !== todayStr) {
+          updateStreak(0, todayStr)
+        }
+      }
+    } else {
+      // No data today yet. Reset if we missed yesterday.
+      if (lastStreakDate && lastStreakDate !== todayStr && lastStreakDate !== yesterdayStr) {
+        updateStreak(0, "")
+      }
+    }
+  }, [dailyCo2, lastStreakDate, streak])
+
+  const getStreakMessage = (s: number) => {
+    if (s >= 7) return "🌱 You're a carbon-conscious user"
+    if (s >= 3) return "🔥 You're building a habit"
+    if (s >= 1) return "Good start 👍"
+    return "Start a reduction streak today!"
+  }
 
   const actions = [
     { id: "stream", label: "Reduce Streaming Quality", reduction: 200, icon: <Monitor className="w-4 h-4" /> },
@@ -222,16 +282,43 @@ export default function Content({
   return (
     <div className="space-y-6">
 
-      {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {greeting}, {firstName} 🌱
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {isDemoMode
-            ? "You're viewing demo data. Upload your screen time to see your real footprint."
-            : "Here's your digital carbon footprint overview."}
-        </p>
+      {/* Greeting & Quick Stats */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {greeting}, {firstName} 🌱
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {isDemoMode
+              ? "You're viewing demo data. Upload your screen time to see your real footprint."
+              : "Here's your digital carbon footprint overview."}
+          </p>
+        </div>
+
+        {streak > 0 && (
+          <div className="group relative flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30 overflow-hidden transition-all duration-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] animate-in fade-in slide-in-from-right-4">
+            {/* Subtle glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/5 to-cyan-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <div className="relative text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform duration-300">🔥</div>
+            <div className="relative">
+              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                {streak} Day Green Streak
+              </p>
+              <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/60 font-medium tracking-tight">
+                {getStreakMessage(streak)}
+              </p>
+            </div>
+            
+            {/* Ping animation sensor */}
+            <div className="absolute top-2 right-2">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-20"></span>
+                <span className="relative inline-flex rounded-full h-1 w-1 bg-emerald-500/50"></span>
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {isDemoMode && (
