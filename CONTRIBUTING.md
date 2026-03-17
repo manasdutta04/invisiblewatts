@@ -90,7 +90,7 @@ Before making changes, read [`CLAUDE.md`](CLAUDE.md) — it is the single source
 Key patterns to follow:
 
 - **Server components** fetch from Supabase and pass props to `"use client"` children for charts/interactivity
-- **Demo mode** must be respected on every data-fetching page (`cookies().get("iw_demo_mode")?.value === "1"`)
+- **Demo mode** must be respected on every data-fetching page (`cookies().get("iw_demo_mode")?.value === "1"`). The `iw_demo_mode=1` cookie also bypasses auth in `middleware.ts`, so unauthenticated users reaching the app via `/demo` will land directly on the dashboard with demo data — new routes must not break this flow
 - **`cn()`** for all className merging — never string concatenation
 - **`components/ui/`** — do not modify shadcn/ui primitives; extend them in `components/kokonutui/` instead
 - **Files never hit storage** — uploaded images stay in-browser as base64
@@ -133,7 +133,8 @@ refactor: extract co2 calculation into lib/emissions.ts
 
 - [ ] No TypeScript errors (run `pnpm build`)
 - [ ] `cn()` used for all className merging
-- [ ] New data pages check the `iw_demo_mode` cookie
+- [ ] New data pages check the `iw_demo_mode` cookie and return early with demo data
+- [ ] Unauthenticated demo flow still works end-to-end (`/demo` → `/dashboard` with demo data)
 - [ ] No secrets or `.env` files committed
 - [ ] Images/files not written to Supabase Storage
 
