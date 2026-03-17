@@ -56,6 +56,9 @@ interface ContentProps {
   totalDataGB: number
   totalEnergyKwh: number
   dataBasedCo2: number
+  streamingHours: number
+  gamingHours: number
+  uniqueDaysCount: number
 }
 
 const DEVICE_COLORS: Record<string, string> = {
@@ -110,6 +113,9 @@ export default function Content({
   totalDataGB,
   totalEnergyKwh,
   dataBasedCo2,
+  streamingHours,
+  gamingHours,
+  uniqueDaysCount,
 }: ContentProps) {
   const isEmpty = totalEntries === 0 && co2Sessions.length === 0
   const needsAnalysis = !isDemoMode && ((totalEntries > 0 && co2Sessions.length === 0) || !!hasNewEntries)
@@ -149,6 +155,34 @@ export default function Content({
 
   const greeting = getGreeting()
   const firstName = userName.split(" ")[0]
+
+  const calculateScore = () => {
+    if (totalHours === 0) return 100
+    const avgDailyHours = totalHours / uniqueDaysCount
+    const dailyData = totalDataGB / uniqueDaysCount
+    const avgStreaming = streamingHours / uniqueDaysCount
+    const avgGaming = gamingHours / uniqueDaysCount
+
+    let score = 100
+    // Deduct up to 25 pts for high screen time (8h = max deduction)
+    score -= Math.min(25, (avgDailyHours / 8) * 25)
+    // Deduct up to 25 pts for high data usage (5GB/day = max)
+    score -= Math.min(25, (dailyData / 5) * 25)
+    // Deduct up to 25 pts for streaming (4h/day = max)
+    score -= Math.min(25, (avgStreaming / 4) * 25)
+    // Deduct up to 25 pts for gaming (2h/day = max)
+    score -= Math.min(25, (avgGaming / 2) * 25)
+
+    return Math.max(0, Math.round(score))
+  }
+
+  const carbonScore = calculateScore()
+  const scoreStatus = carbonScore >= 90 ? "Green User" : carbonScore >= 70 ? "Moderate" : "High Digital Carbon"
+  const scoreColor = carbonScore >= 90 ? "#10b981" : carbonScore >= 70 ? "#f59e0b" : "#ef4444"
+  const scoreData = [
+    { name: "Score", value: carbonScore },
+    { name: "Remaining", value: 100 - carbonScore }
+  ]
 
   return (
     <div className="space-y-6">
@@ -619,6 +653,66 @@ export default function Content({
           </div>
 
           </div> {/* end charts grid */}
+
+          {/* Digital Carbon Score */}
+          <div className="bg-white dark:bg-[#0F0F12] rounded-xl border border-gray-200 dark:border-[#1F1F23]">
+            <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-[#1F1F23]">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Digital Carbon Score</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Based on your daily screen time, streaming, gaming & data usage</p>
+              </div>
+            </div>
+            <div className="px-6 py-6 flex flex-col md:flex-row items-center gap-8 justify-center">
+              <div className="w-[200px] h-[200px] relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={scoreData}
+                      cx="50%" cy="50%"
+                      innerRadius={70} outerRadius={90}
+                      startAngle={90} endAngle={-270}
+                      dataKey="value" stroke="none"
+                    >
+                      <Cell fill={scoreColor} />
+                      <Cell fill="rgba(156,163,175,0.12)" />
+                      <Label
+                        content={({ viewBox }) => {
+                          const { cx, cy } = viewBox as { cx: number; cy: number }
+                          return (
+                            <g>
+                              <text x={cx} y={cy - 5} textAnchor="middle" fill={scoreColor} fontSize={32} fontWeight={700}>
+                                {carbonScore}
+                              </text>
+                              <text x={cx} y={cy + 20} textAnchor="middle" fill="#6b7280" fontSize={14}>
+                                / 100
+                              </text>
+                            </g>
+                          )
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-col justify-center space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</p>
+                  <p className="text-xl font-bold" style={{ color: scoreColor }}>{scoreStatus}</p>
+                </div>
+                <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-[#1F1F23]">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> 90–100: Green User
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> 70–89: Moderate
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Below 70: High Digital Carbon
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Latest AI recommendations */}
           {latestRecs.length > 0 && (

@@ -65,6 +65,9 @@ export default async function Dashboard() {
             { label: "Phone·Social",     hours: 1.5, co2: Math.round(1.5 * 0.5 * KWH_PER_GB * GRID_G_PER_KWH), device: "phone"  },
             { label: "Laptop·Browsing",  hours: 4.0, co2: Math.round(4.0 * 0.1 * KWH_PER_GB * GRID_G_PER_KWH), device: "laptop" },
           ]}
+          streamingHours={28.5}
+          gamingHours={0}
+          uniqueDaysCount={7}
         />
       </Layout>
     )
@@ -162,6 +165,10 @@ export default async function Dashboard() {
   const latestRecs = (analyses?.at(-1)?.recommendations ?? []) as string[]
   const latestSummary = analyses?.at(-1)?.summary ?? null
 
+  const streamingHours = (entries ?? []).filter(e => e.activity_type.toLowerCase() === "streaming").reduce((s, e) => s + Number(e.daily_hours), 0)
+  const gamingHours = (entries ?? []).filter(e => e.activity_type.toLowerCase() === "gaming").reduce((s, e) => s + Number(e.daily_hours), 0)
+  const uniqueDaysCount = new Set((entries ?? []).map(e => e.date)).size || 1
+
   return (
     <Layout>
       <Content
@@ -183,6 +190,9 @@ export default async function Dashboard() {
         unanalyzedCount={unanalyzedCount}
         todayEntryCount={todayEntryCount}
         todayEntries={todayEntries}
+        streamingHours={Math.round(streamingHours * 10) / 10}
+        gamingHours={Math.round(gamingHours * 10) / 10}
+        uniqueDaysCount={uniqueDaysCount}
       />
     </Layout>
   )
