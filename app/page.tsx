@@ -298,7 +298,7 @@ export default async function LandingPage() {
                 <Zap className="w-3 h-3" />
                 Powered by Advanced AI Analysis
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold leading-[1.08] tracking-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold leading-[1.08] tracking-tight">
                 Make the invisible<br />carbon{" "}
                 <span className="relative">
                   <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
@@ -307,37 +307,32 @@ export default async function LandingPage() {
                 </span>
               </h1>
               
-              {/* Highlighted Impact Line */}
-              <div className="flex items-center gap-3 mb-8">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent sm:hidden" />
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-                  <div className="relative flex items-center gap-3 px-4 py-2 rounded-full border border-emerald-500/20 bg-[#0A0C12] shadow-[0_0_20px_rgba(16,185,129,0.05)]">
-                    <Zap className="w-4 h-4 text-emerald-400 fill-emerald-400/10" />
-                    <span className="text-sm font-bold text-emerald-300">1 hour of HD streaming = 400g CO₂</span>
-                    <div className="w-1 h-1 rounded-full bg-gray-600" />
-                    <span className="text-sm text-gray-300 font-medium">Every scroll, stream, and search has a hidden footprint.</span>
-                  </div>
-                </div>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent sm:hidden" />
+              <p className="mt-4 text-xl text-gray-400/90 leading-relaxed font-medium">
+                Every click, stream, and scroll consumes energy — your digital life has a hidden carbon cost.
+              </p>
+
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-semibold text-blue-400">
+                <span className="text-sm">⚡</span>
+                1 hour of HD streaming can emit 50–100g CO₂
               </div>
 
-              <p className="text-lg text-gray-400 leading-relaxed mb-8 max-w-[480px]">
-                InvisibleWatts measures the energy cost of your digital life in real-time. Whether it's cloud computing or daily browsing, we make your environmental impact impossible to ignore.
+              <p className="mt-6 text-base text-gray-500 leading-relaxed max-w-[420px]">
+                Track your digital carbon footprint in real time and get insights to reduce it.
               </p>
-              <div className="flex flex-wrap items-center gap-3 mb-8">
+
+              <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:-translate-y-px active:translate-y-0"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold px-7 py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:-translate-y-px active:translate-y-0 text-sm"
                 >
-                  Start Tracking
+                  Start Tracking Your Digital Carbon
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="#how-it-works"
-                  className="inline-flex items-center gap-1.5 border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-gray-300 hover:text-white font-medium px-6 py-3 rounded-xl transition-all"
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-300 font-medium px-4 py-2 transition-all text-sm"
                 >
-                  Learn How It Works
+                  Sign in
                 </Link>
               </div>
               <div className="flex flex-wrap items-center gap-5 text-xs text-gray-500">
