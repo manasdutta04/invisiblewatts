@@ -487,40 +487,68 @@ export default function Content({
               {chartTab === "7D" && (() => {
                 const hasData = dailyCo2.some((d) => d.co2 > 0)
                 const nonZero = dailyCo2.filter((d) => d.co2 > 0)
+                const weekTotal = dailyCo2.reduce((s, d) => s + d.co2, 0)
                 const weekAvg = nonZero.length ? Math.round(nonZero.reduce((s, d) => s + d.co2, 0) / nonZero.length) : 0
                 return (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <AreaChart data={dailyCo2} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                      <defs>
-                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%"   stopColor="#6366f1" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
-                      <XAxis dataKey="day" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
-                      <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={42} />
-                      <Tooltip content={<ChartTooltip unit="g CO₂" />} cursor={{ stroke: "rgba(99,102,241,0.2)", strokeWidth: 1, strokeDasharray: "4 2" }} />
-                      {hasData && weekAvg > 0 && (
-                        <ReferenceLine
-                          y={weekAvg}
-                          stroke="#a5b4fc"
-                          strokeDasharray="5 3"
-                          strokeWidth={1.5}
-                          label={{ value: `avg ${weekAvg}g`, position: "insideTopRight", fill: "#a5b4fc", fontSize: 10, dy: -8 }}
+                  <div className="flex flex-col h-full space-y-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 mb-2">
+                      <div className="bg-gray-50 dark:bg-[#1A1A1F] px-5 py-4 rounded-xl border border-gray-100 dark:border-[#2A2A30] w-full sm:flex-1">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Weekly CO₂</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{fmtCo2(weekTotal)}</p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-[#1A1A1F] px-5 py-4 rounded-xl border border-gray-100 dark:border-[#2A2A30] w-full sm:flex-1">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Average Daily CO₂</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{fmtCo2(weekAvg)}</p>
+                      </div>
+                    </div>
+                    
+                    <ResponsiveContainer width="100%" height={280}>
+                      <AreaChart data={dailyCo2} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                        <defs>
+                          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%"   stopColor="#6366f1" stopOpacity={0.3} />
+                            <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} stroke="rgba(156,163,175,0.12)" />
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} stroke="#9ca3af" tick={{ fontSize: 11 }} />
+                        <YAxis axisLine={false} tickLine={false} stroke="#9ca3af" unit="g" tick={{ fontSize: 11 }} width={42} />
+                        <Tooltip 
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null
+                            const fDays: Record<string, string> = { "Mon": "Monday", "Tue": "Tuesday", "Wed": "Wednesday", "Thu": "Thursday", "Fri": "Friday", "Sat": "Saturday", "Sun": "Sunday" }
+                            const fDay = label ? (fDays[label as string] || label) : ""
+                            return (
+                              <div style={{ background: "rgba(15,15,18,0.97)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "10px 14px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)", minWidth: "110px" }}>
+                                <p style={{ color: "#818cf8", fontSize: "14px", fontWeight: 700, margin: 0 }}>
+                                  {fDay}: {payload[0].value}g CO₂
+                                </p>
+                              </div>
+                            )
+                          }}
+                          cursor={{ stroke: "rgba(99,102,241,0.2)", strokeWidth: 1, strokeDasharray: "4 2" }} 
                         />
-                      )}
-                      <Area
-                        type="monotone"
-                        dataKey="co2"
-                        stroke="#6366f1"
-                        strokeWidth={2.5}
-                        fill="url(#areaGrad)"
-                        dot={{ r: 3.5, fill: "#6366f1", strokeWidth: 0 }}
-                        activeDot={{ r: 5.5, fill: "#818cf8", strokeWidth: 0 }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                        {hasData && weekAvg > 0 && (
+                          <ReferenceLine
+                            y={weekAvg}
+                            stroke="#a5b4fc"
+                            strokeDasharray="5 3"
+                            strokeWidth={1.5}
+                            label={{ value: `avg ${weekAvg}g`, position: "insideTopRight", fill: "#a5b4fc", fontSize: 10, dy: -8 }}
+                          />
+                        )}
+                        <Area
+                          type="monotone"
+                          dataKey="co2"
+                          stroke="#6366f1"
+                          strokeWidth={2.5}
+                          fill="url(#areaGrad)"
+                          dot={{ r: 3.5, fill: "#6366f1", strokeWidth: 0 }}
+                          activeDot={{ r: 5.5, fill: "#818cf8", strokeWidth: 0 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
                 )
               })()}
 
